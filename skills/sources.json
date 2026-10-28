@@ -1,0 +1,237 @@
+{
+ "generated": "2026-10-28T15:48:43.663Z",
+ "sources": [
+  {
+   "repo": "ruucm/shadergradient",
+   "imported": 0
+  },
+  {
+   "repo": "collidingScopes/liquid-logo",
+   "imported": 0
+  },
+  {
+   "repo": "paper-design/liquid-logo",
+   "imported": 0
+  },
+  {
+   "repo": "oso95/scroll-world",
+   "imported": 1
+  },
+  {
+   "repo": "dashersw/liquid-glass-js",
+   "imported": 0
+  },
+  {
+   "repo": "pmndrs/react-three-fiber",
+   "imported": 0
+  },
+  {
+   "repo": "obra/superpowers",
+   "imported": 15
+  },
+  {
+   "repo": "obra/superpowers-chrome",
+   "imported": 1
+  },
+  {
+   "repo": "obra/the-elements-of-style",
+   "imported": 1
+  },
+  {
+   "repo": "TechyMT/claude-code-superpowers",
+   "imported": 16
+  },
+  {
+   "repo": "anthropics/skills",
+   "imported": 19
+  },
+  {
+   "repo": "vercel-labs/agent-skills",
+   "imported": 9
+  },
+  {
+   "repo": "nextlevelbuilder/ui-ux-pro-max-skill",
+   "imported": 7
+  },
+  {
+   "repo": "shadcn-ui/ui",
+   "imported": 2
+  },
+  {
+   "repo": "vercel/next.js",
+   "imported": 6
+  },
+  {
+   "repo": "antfu/skills",
+   "imported": 12
+  },
+  {
+   "repo": "DeckardGer/tanstack-agent-skills",
+   "imported": 4
+  },
+  {
+   "repo": "astrolicious/agent-skills",
+   "imported": 1
+  },
+  {
+   "repo": "emilkowalski/skills",
+   "imported": 15
+  },
+  {
+   "repo": "remotion-dev/skills",
+   "imported": 12
+  },
+  {
+   "repo": "microsoft/playwright-cli",
+   "imported": 0
+  },
+  {
+   "repo": "clerk/skills",
+   "imported": 20
+  },
+  {
+   "repo": "better-auth/skills",
+   "imported": 6
+  },
+  {
+   "repo": "firebase/agent-skills",
+   "imported": 13
+  },
+  {
+   "repo": "supabase/agent-skills",
+   "imported": 2
+  },
+  {
+   "repo": "neondatabase/agent-skills",
+   "imported": 9
+  },
+  {
+   "repo": "mongodb/agent-skills",
+   "imported": 8
+  },
+  {
+   "repo": "convex/agent-skills",
+   "imported": 33
+  },
+  {
+   "repo": "redis/agent-skills",
+   "imported": 8
+  },
+  {
+   "repo": "stripe/ai",
+   "imported": 10
+  },
+  {
+   "repo": "dodopayments/skills",
+   "imported": 18
+  },
+  {
+   "repo": "polarsource/agent-toolkit",
+   "imported": 4
+  },
+  {
+   "repo": "wshobson/agents",
+   "imported": 37
+  },
+  {
+   "repo": "docker/skills",
+   "imported": 12
+  },
+  {
+   "repo": "LukasNiessen/kubernetes-skill",
+   "imported": 1
+  },
+  {
+   "repo": "getsentry/skills",
+   "imported": 30
+  },
+  {
+   "repo": "huggingface/skills",
+   "imported": 25
+  },
+  {
+   "repo": "OpenRouterTeam/skills",
+   "imported": 18
+  },
+  {
+   "repo": "callstackincubator/agent-skills",
+   "imported": 9
+  },
+  {
+   "repo": "expo/skills",
+   "imported": 23
+  },
+  {
+   "repo": "sveltejs/ai-tools",
+   "imported": 3
+  },
+  {
+   "repo": "trailofbits/skills",
+   "imported": 97
+  },
+  {
+   "repo": "twilio/ai",
+   "imported": 57
+  },
+  {
+   "repo": "resend/resend-skills",
+   "imported": 5
+  },
+  {
+   "repo": "coreyhaines31/marketingskills",
+   "imported": 52
+  },
+  {
+   "repo": "PostHog/skills",
+   "imported": 92
+  },
+  {
+   "repo": "firecrawl/skills",
+   "imported": 32
+  },
+  {
+   "repo": "browserbase/skills",
+   "imported": 18
+  },
+  {
+   "repo": "vercel-labs/agent-browser",
+   "imported": 10
+  },
+  {
+   "repo": "Jeffallan/claude-skills",
+   "imported": 67
+  }
+ ],
+ "references": [
+  {
+   "repo": "ruucm/shadergradient",
+   "prefix": "shadergradient",
+   "files": 114,
+   "path": "skills/_references/shadergradient"
+  },
+  {
+   "repo": "collidingScopes/liquid-logo",
+   "prefix": "liquid-logo",
+   "files": 25,
+   "path": "skills/_references/liquid-logo"
+  },
+  {
+   "repo": "paper-design/liquid-logo",
+   "prefix": "paper-liquid-logo",
+   "files": 22,
+   "path": "skills/_references/paper-liquid-logo"
+  },
+  {
+   "repo": "dashersw/liquid-glass-js",
+   "prefix": "liquid-glass",
+   "files": 9,
+   "path": "skills/_references/liquid-glass"
+  },
+  {
+   "repo": "pmndrs/react-three-fiber",
+   "prefix": "r3f",
+   "files": 36,
+   "path": "skills/_references/r3f"
+  }
+ ]
+}
