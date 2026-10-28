@@ -18,6 +18,8 @@
   --glass-line: rgba(255, 255, 255, 0.7);
   --shadow: 0 30px 80px -40px rgba(20, 17, 15, 0.45);
   --scene-bg: #e9eef1;
+  --case-top: #fbfbf8;
+  --case-bottom: #b2bcb7;
 
   color-scheme: light;
 }
@@ -34,6 +36,8 @@
   --glass-line: rgba(255, 255, 255, 0.16);
   --shadow: 0 40px 100px -50px rgba(0, 0, 0, 0.95);
   --scene-bg: #05070a;
+  --case-top: #14181b;
+  --case-bottom: #04070a;
 
   color-scheme: dark;
 }

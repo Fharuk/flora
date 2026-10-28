@@ -37,11 +37,14 @@ function useBackdropTexture(theme: Theme, palette: Palette) {
       grad.addColorStop(0.62, "#080b0e");
       grad.addColorStop(1, "#04070a");
     } else {
-      grad.addColorStop(0, "#fbfbfa");
-      grad.addColorStop(0.3, "#e9ecec");
-      grad.addColorStop(0.52, "#c9cfd2");
-      grad.addColorStop(0.72, "#b3babe");
-      grad.addColorStop(1, "#b3babe");
+      // Reaches the floor's fog colour *above* the horizon row, then holds it flat.
+      // Anything below that row is the floor seen edge-on; if the background were still
+      // mid-gradient there, the horizon would draw itself as a hard line across the frame.
+      grad.addColorStop(0, "#fcfcfb");
+      grad.addColorStop(0.12, "#f2f4f4");
+      grad.addColorStop(0.22, "#e2e6e8");
+      grad.addColorStop(0.3, "#c9ced1");
+      grad.addColorStop(1, "#c9ced1");
     }
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 8, 512);
@@ -108,7 +111,7 @@ function Motes({ theme, animated, count = 150 }: { theme: Theme; animated: boole
         uniforms: {
           uTime: { value: 0 },
           uColor: { value: new THREE.Color(theme === "dark" ? "#cfe6f2" : "#ffffff") },
-          uOpacity: { value: theme === "dark" ? 0.4 : 0.22 },
+          uOpacity: { value: theme === "dark" ? 0.34 : 0.1 },
         },
         vertexShader: /* glsl */ `
           attribute float aPhase;
@@ -120,8 +123,10 @@ function Motes({ theme, animated, count = 150 }: { theme: Theme; animated: boole
             p.x += sin(uTime * 0.18 + aPhase * 6.28) * 0.22;
             p.z += cos(uTime * 0.14 + aPhase * 4.4) * 0.22;
             vec4 mv = modelViewMatrix * vec4(p, 1.0);
-            vAlpha = smoothstep(9.0, 1.5, -mv.z) * (0.35 + aPhase * 0.65);
-            gl_PointSize = max(2.5, (1.2 + aPhase * 2.2) * (30.0 / max(-mv.z, 1.0)));
+            // fade out near the floor: otherwise they read as specks of dirt on the sweep
+            float floorFade = smoothstep(0.35, 1.6, p.y);
+            vAlpha = smoothstep(9.0, 1.5, -mv.z) * (0.35 + aPhase * 0.65) * floorFade;
+            gl_PointSize = clamp((1.1 + aPhase * 2.0) * (30.0 / max(-mv.z, 1.0)), 2.0, 7.0);
             gl_Position = projectionMatrix * mv;
           }
         `,
@@ -257,7 +262,8 @@ function Lights({ theme, palette }: { theme: Theme; palette: Palette }) {
         color={palette.light}
         castShadow
         shadow-mapSize={[1024, 1024]}
-        shadow-bias={-0.0005}
+        shadow-bias={-0.00012}
+        shadow-normalBias={0.045}
       />
       <directionalLight position={[5, 3.4, 2.2]} intensity={isDark ? 1.4 : 2.0} color="#ffffff" />
       <pointLight position={[0, 2.6, -3.6]} intensity={isDark ? 12 : 5} color={palette.light} distance={12} />
@@ -291,7 +297,7 @@ function Scene({
       <StudioEnvironment theme={theme} palette={palette} />
       <Lights theme={theme} palette={palette} />
       <Ground theme={theme} palette={palette} animated={animated} />
-      <Motes theme={theme} animated={animated} />
+      {theme === "dark" ? <Motes theme={theme} animated={animated} /> : null}
 
       <group scale={1} position={[0, 0, 0]}>
         <Vessel vessel={config.vessel} palette={palette} theme={theme} />
@@ -329,7 +335,7 @@ function Scene({
       />
       <Effects theme={theme} quality={quality} focusDistance={0.024} />
       <Backdrop theme={theme} palette={palette} />
-      <fog attach="fog" args={[theme === "dark" ? "#080b0e" : "#b3babe", 9, 26]} />
+      <fog attach="fog" args={[theme === "dark" ? "#04070a" : "#c9ced1", theme === "dark" ? 7 : 10, theme === "dark" ? 19 : 24]} />
     </>
   );
 }
@@ -403,7 +409,7 @@ export function BouquetCanvas({
         }}
         frameloop={visible ? "always" : "demand"}
         onCreated={({ gl }) => {
-          gl.setClearColor(new THREE.Color(theme === "dark" ? "#06090b" : "#b3babe"));
+          gl.setClearColor(new THREE.Color(theme === "dark" ? "#06090b" : "#c9ced1"));
         }}
       >
         <Scene

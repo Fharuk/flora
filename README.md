@@ -76,7 +76,7 @@ components/
     materials/textures.ts  procedural normal + roughness maps
     studio-environment.tsx a photo studio baked into a PMREM env map at runtime
     vessel.tsx          lathed vessel profiles + water line
-    ground.tsx          floor + animated caustics + contact shadows
+    ground.tsx          floor + animated caustics + contact shadow
     effects.tsx         tone map → bloom → DOF → aberration → vignette → grain
     lib/                shared GLSL, capability hooks
 lib/
@@ -103,7 +103,7 @@ skills/                 840 vendored agent skills (see skills/README.md)
 
 - One merged geometry per species, reused by every stem of that species.
 - One canvas for the hero; `IntersectionObserver` gates the botany/vitrine canvases.
-- `dpr` capped at 1.9 desktop / 1.4 mobile; contact shadows and DOF drop on low-quality.
+- `dpr` capped at 1.9 desktop / 1.4 mobile; DOF and dust motes drop on low-quality.
 - Render loop pauses on `visibilitychange`; motion respects `prefers-reduced-motion`
   (which also forces the bouquet to its assembled state instantly).
 - No network requests after first paint except font files (self-hosted via Fontsource).

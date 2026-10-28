@@ -24,14 +24,38 @@ import { cn } from "@/lib/utils";
 
 function Subject({ slug, theme }: { slug: string; theme: "light" | "dark" }) {
   const spec = specimenBySlug.get(slug)!;
-  const palette = palettes.frost;
+  // the case tints the glass with the species' own pigment — on a neutral frost tint every
+  // specimen read as the same white flower once it was inside the vitrine
+  const palette = useMemo(
+    () => ({
+      ...palettes.frost,
+      glass: spec.colours.petal[0],
+      metal: spec.colours.core,
+      light: spec.colours.petal[1],
+    }),
+    [spec]
+  );
   const reduced = useReducedMotion();
   const group = useRef<THREE.Group>(null);
 
   const bloom = speciesBloom(spec, 0.94);
   const geometry = useMemo(() => buildFlower(spec, bloom), [spec, bloom]);
-  const displayStem = useMemo(() => buildDisplayStem(spec, 2.9), [spec]);
+  const displayStem = useMemo(() => buildDisplayStem(spec, 2.2), [spec]);
   const material = useMemo(() => flowerMaterial(spec, palette, theme), [spec, palette, theme]);
+
+  /*
+   * Frame the subject from its own bounds instead of by species weight. A ghost orchid's
+   * spray is nearly four times the radius of a ranunculus at the same nominal size, so any
+   * fixed scale either overflows the case or shrinks the small species to a dot.
+   */
+  const framing = useMemo(() => {
+    geometry.head.computeBoundingSphere();
+    const sphere = geometry.head.boundingSphere;
+    const radius = Math.max(sphere?.radius ?? 1, 0.05);
+    const scale = THREE.MathUtils.clamp(0.72 / radius, 0.4, 1.1);
+    const centreY = (sphere?.center.y ?? 0) * scale;
+    return { scale, y: 0.44 - centreY };
+  }, [geometry]);
 
   useFrame((state, delta) => {
     if (!group.current) return;
@@ -39,11 +63,8 @@ function Subject({ slug, theme }: { slug: string; theme: "light" | "dark" }) {
     group.current.position.y = Math.sin(state.clock.elapsedTime * 0.4) * 0.02;
   });
 
-  // frame by species: a titan arum needs far more room than a ranunculus
-  const scale = spec.weight >= 3.5 ? 0.72 : spec.weight >= 2.5 ? 0.95 : 1.25;
-
   return (
-    <group scale={scale} position={[0, -0.1, 0]}>
+    <group scale={framing.scale} position={[0, framing.y, 0]}>
       <group ref={group}>
         <mesh geometry={geometry.head} material={material} />
         {geometry.core ? <mesh geometry={geometry.core} material={material} /> : null}
@@ -138,7 +159,11 @@ export function Vitrine() {
           <div className="col-span-12 lg:col-span-7">
             <div
               ref={hostRef}
-              className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-line bg-[var(--scene-bg)] sm:aspect-[16/11]"
+              className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-line sm:aspect-[16/11]"
+              style={{
+                background:
+                  "radial-gradient(120% 90% at 50% 12%, var(--case-top) 0%, var(--case-top) 34%, var(--case-bottom) 100%)",
+              }}
             >
               {hasWebGL && inView ? (
                 <Canvas
@@ -148,9 +173,9 @@ export function Vitrine() {
                   frameloop={visible ? "always" : "demand"}
                 >
                   <StudioEnvironment theme={theme} palette={palettes.frost} />
-                  <ambientLight intensity={theme === "dark" ? 0.35 : 1.0} />
-                  <directionalLight position={[-3.4, 4.6, 3.2]} intensity={theme === "dark" ? 2.4 : 2.0} />
-                  <directionalLight position={[3.2, 0.8, -2.4]} intensity={1.1} color="#cfe6ff" />
+                  <ambientLight intensity={theme === "dark" ? 0.3 : 0.4} />
+                  <directionalLight position={[-3.4, 4.6, 3.2]} intensity={theme === "dark" ? 2.1 : 1.2} />
+                  <directionalLight position={[3.2, 0.8, -2.4]} intensity={theme === "dark" ? 0.9 : 0.55} color="#cfe6ff" />
                   <Subject slug={specimen.slug} theme={theme} />
                 </Canvas>
               ) : null}

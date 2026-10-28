@@ -1,6 +1,5 @@
 "use client";
 
-import { ContactShadows } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
 import { useMemo, useRef } from "react";
 import * as THREE from "three";
@@ -75,7 +74,7 @@ export function Ground({ theme, palette, animated }: { theme: Theme; palette: Pa
   const uniforms = useMemo(
     () => ({
       uTime: { value: 0 },
-      uIntensity: { value: theme === "dark" ? 0.55 : 0.26 },
+      uIntensity: { value: theme === "dark" ? 0.8 : 0.0 },
       uColor: { value: new THREE.Color(palette.light) },
       uScale: { value: 1.35 },
     }),
@@ -88,7 +87,7 @@ export function Ground({ theme, palette, animated }: { theme: Theme; palette: Pa
     causticMat.current.uniforms.uTime.value = animated ? state.clock.elapsedTime : 3.2;
   });
 
-  const floorColour = theme === "dark" ? "#080b0e" : "#b3babe";
+  const floorColour = theme === "dark" ? "#080b0e" : "#c9ced1";
 
 
   return (
@@ -98,16 +97,16 @@ export function Ground({ theme, palette, animated }: { theme: Theme; palette: Pa
         <circleGeometry args={[26, 96]} />
         <meshPhysicalMaterial
           color={new THREE.Color(floorColour)}
-          roughness={theme === "dark" ? 0.2 : 0.55}
+          roughness={theme === "dark" ? 0.46 : 0.55}
           metalness={0}
-          envMapIntensity={theme === "dark" ? 0.5 : 0.28}
-          clearcoat={theme === "dark" ? 0.6 : 0.1}
-          clearcoatRoughness={0.25}
+          envMapIntensity={theme === "dark" ? 0.12 : 0.28}
+          clearcoat={theme === "dark" ? 0.15 : 0.1}
+          clearcoatRoughness={0.36}
         />
       </mesh>
 
       {/* light pooled through the glass */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.004, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.004, 0]} visible={theme === "dark"}>
         <planeGeometry args={[7.5, 7.5]} />
         <shaderMaterial
           ref={causticMat}
@@ -120,16 +119,33 @@ export function Ground({ theme, palette, animated }: { theme: Theme; palette: Pa
         />
       </mesh>
 
-      <ContactShadows
-        position={[0, 0.006, 0]}
-        opacity={theme === "dark" ? 0.75 : 0.42}
-        scale={9}
-        blur={2.6}
-        far={4}
-        resolution={512}
-        color={theme === "dark" ? "#000000" : "#6b7880"}
-        frames={animated ? Infinity : 1}
-      />
+      {/* A soft contact shadow, drawn as a radial falloff. drei's ContactShadows
+          re-renders a depth pass and bands badly at this scale; a gradient is stable,
+          costs one draw call, and reads identically at this distance. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.008, 0]}>
+        <planeGeometry args={[4.6, 4.6]} />
+        <shaderMaterial
+          transparent
+          depthWrite={false}
+          uniforms={{ uColor: { value: new THREE.Color(theme === "dark" ? "#000000" : "#5e676c") } }}
+          vertexShader={/* glsl */ `
+            varying vec2 vUv;
+            void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
+          `}
+          fragmentShader={/* glsl */ `
+            precision highp float;
+            varying vec2 vUv;
+            uniform vec3 uColor;
+            void main() {
+              vec2 p = (vUv - 0.5) * 2.0;
+              // ellipse, tighter under the belly of the vessel
+              float d = length(p * vec2(1.0, 1.0));
+              float shadow = smoothstep(1.0, 0.15, d);
+              gl_FragColor = vec4(uColor, shadow * 0.55);
+            }
+          `}
+        />
+      </mesh>
     </group>
   );
 }
