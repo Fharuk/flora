@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { Check, Link2 } from "lucide-react";
 
+import { synthSite } from "@/lib/site";
 import { useBouquetMeta, useShareUrl, useSynth } from "@/lib/store";
 import { specimens } from "@/lib/specimens";
 
@@ -137,13 +138,13 @@ export function SynthFooter() {
         <div className="flex flex-wrap items-end justify-between gap-8 border-b border-line pb-8">
           <p className="display text-[clamp(2.4rem,9vw,7rem)] leading-[0.85]">Flora-Synth</p>
           <div className="space-y-1 text-right">
-            <p className="label">Lagos · Berlin</p>
-            <p className="label">Est. 2026</p>
+            <p className="label">{synthSite.location}</p>
+            <p className="label">Est. {synthSite.year}</p>
             <a
-              href="mailto:studio@flora-synth.studio"
+              href={`mailto:${synthSite.email}`}
               className="block font-mono text-[0.68rem] uppercase tracking-[0.16em] text-ink hover:text-accent"
             >
-              studio@flora-synth.studio
+              {synthSite.email}
             </a>
           </div>
         </div>

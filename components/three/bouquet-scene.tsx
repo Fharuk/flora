@@ -391,7 +391,7 @@ export function BouquetCanvas({
   return (
     <div className={className}>
       <Canvas
-        shadows={quality === "high"}
+        shadows={quality === "high" ? { type: THREE.PCFShadowMap } : false}
         dpr={[1, quality === "high" ? 1.9 : 1.4]}
         camera={{
           fov: compact ? 34 : 30,

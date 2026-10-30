@@ -12,8 +12,9 @@ import {
   type BouquetConfig,
 } from "@/lib/bouquet";
 import type { Arrangement, PaletteKey, Vessel } from "@/lib/specimens";
+import { resolveInitialTheme, type ThemeName } from "@/lib/theme";
 
-export type Theme = "light" | "dark";
+export type Theme = ThemeName;
 
 type SynthState = {
   config: BouquetConfig;
@@ -51,7 +52,10 @@ export const useSynth = create<SynthState>((set, get) => ({
   hydrate: () => {
     if (get().hydrated || typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
-    const theme = params.get("theme") === "dark" ? "dark" : "light";
+    const theme = resolveInitialTheme(
+      window.location.search,
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+    );
     const config = params.toString() ? decodeBouquet(params) : DEFAULT_CONFIG;
     set({ config, theme, hydrated: true });
   },

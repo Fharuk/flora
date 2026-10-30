@@ -155,6 +155,7 @@ export function InstrumentControls() {
   const setBloom = useSynth((s) => s.setBloom);
   const generate = useSynth((s) => s.generate);
   const addSpecies = useSynth((s) => s.addSpecies);
+  const toggleSpecies = useSynth((s) => s.toggleSpecies);
   const clearSpecies = useSynth((s) => s.clearSpecies);
   const setSpecies = useSynth((s) => s.setSpecies);
 
@@ -235,7 +236,7 @@ export function InstrumentControls() {
                       e.dataTransfer.setData("text/flora-specimen", s.slug);
                       e.dataTransfer.effectAllowed = "copy";
                     }}
-                    onClick={() => addSpecies(s.slug)}
+                    onClick={() => toggleSpecies(s.slug)}
                     className={cn(
                       "cursor-grab rounded-full border px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.14em] transition-colors active:cursor-grabbing",
                       active

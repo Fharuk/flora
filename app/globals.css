@@ -21,6 +21,12 @@
   --case-top: #fbfbf8;
   --case-bottom: #b2bcb7;
 
+  /* The full-screen menu is a black vitrine in both themes, so its colours are fixed
+     rather than derived from --ink/--paper. Using theme tokens here inverted the panel
+     and its text together, which made the menu illegible in light mode. */
+  --veil: #14110f;
+  --bone: #f2efe9;
+
   color-scheme: light;
 }
 
@@ -51,6 +57,8 @@
   --color-line-strong: var(--line-strong);
   --color-accent: var(--accent);
   --color-scene: var(--scene-bg);
+  --color-veil: var(--veil);
+  --color-bone: var(--bone);
 
   --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
   --font-sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
@@ -71,6 +79,7 @@
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
     background: var(--paper);
+    transition: background-color 0.6s var(--ease-out-expo);
   }
 
   body {

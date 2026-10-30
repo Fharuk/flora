@@ -10,6 +10,7 @@ import "@fontsource/jetbrains-mono/500.css";
 import "./globals.css";
 
 import { ThemeBoot, UrlSync } from "@/components/synth/theme-boot";
+import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import { synthSite } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -61,6 +62,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" data-theme="light" suppressHydrationWarning>
+      <head>
+        {/* sets data-theme before first paint so dark links never flash light */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOT_SCRIPT }} />
+      </head>
       <body className="min-h-screen bg-paper text-ink antialiased">
         <a
           href="#instrument"
