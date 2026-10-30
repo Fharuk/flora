@@ -93,6 +93,16 @@
     transition: background-color 0.6s var(--ease-out-expo), color 0.6s var(--ease-out-expo);
   }
 
+  /* the menu overlay fades in via CSS and unmounts immediately on close, so a stalled
+     animation can never leave an invisible full-screen dialog over the page */
+  .menu-veil {
+    animation: menu-veil-in 0.25s var(--ease-out-expo) both;
+  }
+  @keyframes menu-veil-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
   /* the header is fixed, so an anchored section must start below it */
   section[id] {
     scroll-margin-top: 4.5rem;

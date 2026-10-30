@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { Menu, Moon, Sun, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -136,19 +136,14 @@ export function Header() {
         </div>
       </header>
 
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            ref={panelRef}
-            role="dialog"
-            aria-modal="true"
-            aria-label="Sections"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-[60] bg-veil/95 backdrop-blur-xl"
-          >
+      {open ? (
+        <div
+          ref={panelRef}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Sections"
+          className="menu-veil fixed inset-0 z-[60] bg-veil/95 backdrop-blur-xl"
+        >
             <div className="flex h-full flex-col px-6 py-6 sm:px-10">
               <div className="flex items-center justify-between">
                 <span className="text-[0.82rem] font-medium uppercase tracking-[0.24em] text-bone">
@@ -205,10 +200,9 @@ export function Header() {
                   Ten specimens · glass and chrome · generated in the browser
                 </p>
               </div>
-            </div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+          </div>
+        </div>
+      ) : null}
     </>
   );
 }
