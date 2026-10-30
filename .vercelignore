@@ -1,0 +1,11 @@
+# The skill library is reference material for humans and the sync script; nothing in
+# the app imports it. Excluding it keeps deployments small and fast.
+skills/
+.skills-src/
+
+# local build output
+.next/
+out/
+
+# screenshots and scratch files
+*.png
