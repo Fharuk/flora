@@ -115,7 +115,10 @@ export function useShareUrl() {
   const theme = useSynth((s) => s.theme);
   const [origin, setOrigin] = useState("");
   useEffect(() => {
-    setOrigin(window.location.origin + window.location.pathname);
+    // Trailing slash stripped: pathname is "/" at the root, so keeping it produced
+    // "https://host/" + "/?seed=…" — a share link with a double slash that still worked
+    // but looked broken wherever it was displayed or pasted.
+    setOrigin(window.location.origin + window.location.pathname.replace(/\/+$/, ""));
   }, []);
   const path = `/?${encodeBouquet(config)}&theme=${theme}`;
   return origin ? `${origin}${path}` : path;
