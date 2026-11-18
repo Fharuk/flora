@@ -26,11 +26,24 @@ async function loadSerif(file: string) {
   return readFile(join(FONT_DIR, file));
 }
 
+/** A missing face should cost the card its serif, not its whole response. */
+async function optionalSerif() {
+  try {
+    const [serif, italic] = await Promise.all([
+      loadSerif("og-serif.woff"),
+      loadSerif("og-serif-italic.woff"),
+    ]);
+    return [
+      { name: "Cormorant", data: serif, weight: 500 as const, style: "normal" as const },
+      { name: "Cormorant", data: italic, weight: 400 as const, style: "italic" as const },
+    ];
+  } catch {
+    return undefined;
+  }
+}
+
 export async function GET(request: Request) {
-  const [serif, serifItalic] = await Promise.all([
-    loadSerif("og-serif.woff"),
-    loadSerif("og-serif-italic.woff"),
-  ]);
+  const fonts = await optionalSerif();
   const { searchParams } = new URL(request.url);
   const config = decodeBouquet(searchParams);
   const palette = palettes[config.palette];
@@ -96,12 +109,6 @@ export async function GET(request: Request) {
         </div>
       </div>
     ),
-    {
-      ...size,
-      fonts: [
-        { name: "Cormorant", data: serif, weight: 500, style: "normal" },
-        { name: "Cormorant", data: serifItalic, weight: 400, style: "italic" },
-      ],
-    }
+    { ...size, ...(fonts ? { fonts } : {}) }
   );
 }
