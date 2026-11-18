@@ -12,6 +12,7 @@
     "skills": "node scripts/sync-skills.mjs"
   },
   "dependencies": {
+    "@fontsource/cormorant-garamond": "^5.3.0",
     "@fontsource/instrument-serif": "5.3.0",
     "@fontsource/jetbrains-mono": "5.3.0",
     "@fontsource/schibsted-grotesk": "5.3.0",

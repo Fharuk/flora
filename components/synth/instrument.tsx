@@ -71,13 +71,15 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: ready ? 1 : 0, y: ready ? 0 : 10 }}
             transition={{ duration: 0.9, ease: EASE }}
-            className="frost flex items-center gap-3 rounded-full px-4 py-2"
+            className="frost flex items-center gap-3 rounded-full px-4 py-1.5"
           >
             <span className="relative flex h-1.5 w-1.5">
-              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-60" />
-              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--accent)] opacity-50" />
+              <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[var(--accent)]" />
             </span>
-            <span className="label label-strong whitespace-nowrap">Live · {config.density} stems</span>
+            <span className="label label-strong whitespace-nowrap">
+              {config.density} stems &middot; in the vase
+            </span>
             <span aria-hidden className="hidden h-3 w-px bg-[var(--line-strong)] sm:block" />
             <span className="label hidden whitespace-nowrap sm:inline">{title}</span>
           </motion.div>
@@ -89,35 +91,47 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.15, ease: EASE }}
-              className="frost pointer-events-auto w-full max-w-[24rem] rounded-[1.4rem] p-4 sm:p-6"
+              transition={{ duration: 1.1, delay: 0.15, ease: EASE }}
+              className="frost pointer-events-auto relative w-full max-w-[25rem] rounded-[1.6rem] p-5 sm:p-7"
             >
-              <p className="label mb-2.5">{specimens.length} specimens · glass &amp; chrome</p>
-              <h1 className="display text-[clamp(2.1rem,3.6vw,2.9rem)] leading-[0.9] text-ink">
-                Flora-Synth
-              </h1>
-              <p className="mt-3 hidden text-[0.8rem] leading-relaxed text-ink-soft sm:block">
-                An instrument for composing impossible bouquets. Every petal is generated in the
-                browser — nothing is a photograph.
+              {/* a gold rule across the head of the card, like the edge of a card stock */}
+              <span aria-hidden className="absolute inset-x-7 top-0 h-px bg-gradient-to-r from-transparent via-[var(--gold)] to-transparent opacity-70" />
+
+              <p className="label mb-3 text-[var(--gold-ink)]">
+                {specimens.length} specimens &middot; cut in glass
               </p>
 
-              <div className="mt-4 flex flex-wrap items-center gap-2 sm:mt-5">
-                <button type="button" onClick={generate} className="btn btn-primary group">
-                  <Sparkles className="h-4 w-4 transition-transform duration-500 group-hover:rotate-90" />
+              <h1 className="font-title text-[clamp(2.3rem,4vw,3.1rem)] leading-[0.86] tracking-[-0.01em] text-ink">
+                Flora<span className="italic text-[var(--accent)]">-</span>Synth
+              </h1>
+
+              <p className="mt-4 hidden text-[0.86rem] leading-relaxed text-ink-soft sm:block">
+                Bouquets that never wilt. Every petal is drawn from numbers in your browser —
+                <span className="italic text-ink"> nothing here is a photograph.</span>
+              </p>
+
+              <div className="mt-5 flex items-center gap-2">
+                <button type="button" onClick={generate} className="btn btn-primary group flex-1">
+                  <Sparkles className="h-3.5 w-3.5 transition-transform duration-700 group-hover:rotate-90" />
                   Synthesize
                 </button>
                 <a href="#instrument" className="btn btn-ghost">
                   Compose
-                  <ArrowDown className="h-3.5 w-3.5" />
+                  <ArrowDown className="h-3 w-3" />
                 </a>
+                {/* an icon-only share keeps all three actions on one line at every width */}
                 <button
                   type="button"
                   onClick={copy}
-                  aria-label="Copy a link to this bouquet"
-                  className="btn btn-ghost"
+                  aria-label={copied ? "Link copied" : "Copy a link to this bouquet"}
+                  title={copied ? "Copied" : "Copy link"}
+                  className="btn btn-ghost !px-3"
                 >
-                  {copied ? <Check className="h-3.5 w-3.5 text-accent" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied ? "Copied" : "Share"}
+                  {copied ? (
+                    <Check className="h-3.5 w-3.5 text-[var(--gold-ink)]" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
                 </button>
               </div>
             </motion.div>
@@ -128,8 +142,8 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
               transition={{ duration: 1.2, delay: 0.5 }}
               className="pointer-events-auto hidden text-right sm:block"
             >
-              <p className="label mb-1">{title}</p>
-              <p className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ink-soft">
+              <p className="font-display text-2xl italic leading-none text-ink">{title}</p>
+              <p className="mt-2 font-mono text-[0.55rem] uppercase tracking-[0.22em] text-ink-soft">
                 seed {config.seed.toString(36).toUpperCase()} · gen{" "}
                 {String(generation).padStart(3, "0")}
               </p>
@@ -146,7 +160,7 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
 
 /* --------------------------------------------------------------- controls */
 
-export function InstrumentControls() {
+export function InstrumentControls({ bare = false }: { bare?: boolean } = {}) {
   const config = useSynth((s) => s.config);
   const setPalette = useSynth((s) => s.setPalette);
   const setArrangement = useSynth((s) => s.setArrangement);
@@ -177,21 +191,14 @@ export function InstrumentControls() {
     [config.species]
   );
 
-  return (
-    <section id="instrument" className="relative border-t border-line bg-paper px-5 py-16 sm:px-8 sm:py-24">
-      <div className="mx-auto grid w-full max-w-[92rem] grid-cols-12 gap-x-8 gap-y-12">
-        <div className="col-span-12 lg:col-span-4">
-          <p className="label mb-5">01 — The instrument</p>
-          <h2 className="display max-w-md text-[clamp(2.2rem,4.4vw,3.6rem)]">
-            Regenerate until it feels <span className="italic text-accent">inevitable.</span>
-          </h2>
-          <p className="mt-5 max-w-sm text-[0.9rem] leading-relaxed text-ink-soft">
-            Species, vessel, palette and posture are all inputs. The bouquet is composed by a
-            deterministic engine, so the same link always returns the same arrangement — and a new
-            seed always returns a different one.
-          </p>
-
-          <div className="mt-8 flex flex-wrap gap-2">
+  /*
+   * Two ways in. As a page section the instrument introduces itself; `bare` drops that
+   * framing so the studio page can host the same controls inside its own column — the
+   * full section nested in a half-width column squeezed the fields into a third of the
+   * space and set the headings on top of each other.
+   */
+  const actions = (
+    <div className="flex flex-wrap gap-2">
             <button type="button" onClick={generate} className="btn btn-primary">
               <Dices className="h-4 w-4" />
               New seed
@@ -207,9 +214,26 @@ export function InstrumentControls() {
               <RotateCcw className="h-3.5 w-3.5" />
               Curator's choice
             </button>
-          </div>
+    </div>
+  );
 
-          {/* the drop target doubles as the "vase" of the control surface */}
+  const intro = (
+    <>
+      <p className="eyebrow mb-5">01 — The instrument</p>
+      <h2 className="display max-w-md text-[clamp(2.2rem,4.4vw,3.6rem)]">
+        Regenerate until it feels <span className="emphasis">inevitable.</span>
+      </h2>
+      <p className="mt-5 max-w-sm text-[0.9rem] leading-relaxed text-ink-soft">
+        Species, vessel, palette and posture are all inputs. The bouquet is composed by a
+        deterministic engine, so the same link always returns the same arrangement — and a new
+        seed always returns a different one.
+      </p>
+      <div className="mt-8">{actions}</div>
+    </>
+  );
+
+  /* the drop target doubles as the "vase" of the control surface */
+  const speciesCard = (
           <div
             ref={dropRef}
             onDragOver={(e) => {
@@ -219,10 +243,25 @@ export function InstrumentControls() {
             onDragLeave={() => setDropActive(false)}
             onDrop={onDrop}
             className={cn(
-              "mt-8 rounded-2xl border border-dashed p-5 transition-colors duration-300",
-              dropActive ? "border-accent bg-accent/10" : "border-[var(--line-strong)]"
+              "relative mt-8 rounded-2xl border p-5 transition-all duration-500",
+              dropActive
+                ? "border-[var(--gold)] bg-[color-mix(in_oklab,var(--gold)_10%,transparent)]"
+                : "border-[color-mix(in_oklab,var(--gold)_32%,transparent)] bg-[color-mix(in_oklab,var(--blush)_28%,transparent)]"
             )}
           >
+            {/* four corner ticks — the frame of a specimen mount */}
+            {[
+              "left-2 top-2 border-l border-t",
+              "right-2 top-2 border-r border-t",
+              "left-2 bottom-2 border-b border-l",
+              "right-2 bottom-2 border-b border-r",
+            ].map((pos) => (
+              <span
+                key={pos}
+                aria-hidden
+                className={cn("pointer-events-none absolute h-2.5 w-2.5 border-[var(--gold)] opacity-60", pos)}
+              />
+            ))}
             <p className="label mb-3">{dropActive ? "Release to add" : "Drag a specimen here"}</p>
             <div className="flex flex-wrap gap-1.5">
               {specimens.map((s) => {
@@ -238,10 +277,10 @@ export function InstrumentControls() {
                     }}
                     onClick={() => toggleSpecies(s.slug)}
                     className={cn(
-                      "cursor-grab rounded-full border px-2.5 py-1 font-mono text-[0.58rem] uppercase tracking-[0.14em] transition-colors active:cursor-grabbing",
+                      "cursor-grab rounded-full border px-2.5 py-1 font-sans text-[0.55rem] uppercase tracking-[0.16em] transition-colors active:cursor-grabbing",
                       active
-                        ? "border-accent/60 bg-accent/12 text-ink"
-                        : "border-line text-ink-soft hover:border-[var(--line-strong)] hover:text-ink"
+                        ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_14%,transparent)] text-ink"
+                        : "border-line text-ink-soft hover:border-[color-mix(in_oklab,var(--gold)_50%,transparent)] hover:text-ink"
                     )}
                     aria-pressed={active}
                   >
@@ -254,15 +293,15 @@ export function InstrumentControls() {
               <button
                 type="button"
                 onClick={clearSpecies}
-                className="mt-4 font-mono text-[0.58rem] uppercase tracking-[0.16em] text-ink-soft underline underline-offset-4 hover:text-ink"
+                className="mt-4 font-sans text-[0.55rem] uppercase tracking-[0.22em] text-ink-soft underline underline-offset-4 hover:text-ink"
               >
                 keep only the last
               </button>
             ) : null}
           </div>
-        </div>
+  );
 
-        <div className="col-span-12 lg:col-span-8">
+  const fields = (
           <div className="grid grid-cols-1 gap-x-8 gap-y-9 sm:grid-cols-2">
             <Field label="Palette" hint="Glass tint and key light">
               <div className="grid grid-cols-2 gap-2">
@@ -277,7 +316,9 @@ export function InstrumentControls() {
                       aria-pressed={active}
                       className={cn(
                         "group flex items-center gap-3 rounded-xl border p-2.5 text-left transition-colors",
-                        active ? "border-ink" : "border-line hover:border-[var(--line-strong)]"
+                        active
+                          ? "border-[var(--gold)] shadow-[inset_0_0_0_1px_var(--gold)]"
+                          : "border-line hover:border-[color-mix(in_oklab,var(--gold)_45%,transparent)]"
                       )}
                     >
                       <span
@@ -289,8 +330,10 @@ export function InstrumentControls() {
                         }}
                       />
                       <span className="min-w-0">
-                        <span className="block text-[0.8rem] text-ink">{p.name}</span>
-                        <span className="block truncate font-mono text-[0.55rem] uppercase tracking-[0.12em] text-ink-soft">
+                        <span className="block text-[0.8rem] leading-tight text-ink">{p.name}</span>
+                        {/* wraps to two lines rather than truncating —
+                            "Warm clear glass, clear…" told nobody anything */}
+                        <span className="mt-1 block font-sans text-[0.48rem] uppercase leading-relaxed tracking-[0.14em] text-ink-soft">
                           {p.description}
                         </span>
                       </span>
@@ -311,12 +354,15 @@ export function InstrumentControls() {
                       onClick={() => setArrangement(a.key)}
                       aria-pressed={active}
                       className={cn(
-                        "flex w-full items-baseline justify-between gap-4 rounded-lg border px-3 py-2 text-left transition-colors",
-                        active ? "border-ink" : "border-line hover:border-[var(--line-strong)]"
+                        "flex w-full flex-col items-start gap-1 rounded-lg border px-3 py-2 text-left transition-colors",
+                        active
+                          ? "border-[var(--gold)] shadow-[inset_0_0_0_1px_var(--gold)]"
+                          : "border-line hover:border-[color-mix(in_oklab,var(--gold)_45%,transparent)]"
                       )}
                     >
                       <span className="text-[0.82rem] text-ink">{a.name}</span>
-                      <span className="max-w-[16ch] text-right font-mono text-[0.55rem] uppercase leading-tight tracking-[0.1em] text-ink-soft">
+                      {/* stacked under the name: side-by-side forced these to four ragged lines */}
+                      <span className="font-sans text-[0.5rem] uppercase leading-relaxed tracking-[0.14em] text-ink-soft">
                         {a.description}
                       </span>
                     </button>
@@ -337,7 +383,9 @@ export function InstrumentControls() {
                       aria-pressed={active}
                       className={cn(
                         "group rounded-xl border p-3 text-left transition-colors",
-                        active ? "border-ink" : "border-line hover:border-[var(--line-strong)]"
+                        active
+                          ? "border-[var(--gold)] shadow-[inset_0_0_0_1px_var(--gold)]"
+                          : "border-line hover:border-[color-mix(in_oklab,var(--gold)_45%,transparent)]"
                       )}
                     >
                       <VesselGlyph kind={v.key} active={active} />
@@ -371,7 +419,29 @@ export function InstrumentControls() {
               </div>
             </Field>
           </div>
+  );
+
+  if (bare) {
+    return (
+      <div className="grid gap-8">
+        {speciesCard}
+        {actions}
+        {fields}
+      </div>
+    );
+  }
+
+  return (
+    <section
+      id="instrument"
+      className="relative overflow-hidden border-t border-line bg-paper px-5 py-16 sm:px-8 sm:py-24"
+    >
+      <div className="mx-auto grid w-full max-w-[92rem] grid-cols-12 gap-x-8 gap-y-12">
+        <div className="col-span-12 lg:col-span-4">
+          {intro}
+          {speciesCard}
         </div>
+        <div className="col-span-12 lg:col-span-8">{fields}</div>
       </div>
     </section>
   );
@@ -380,9 +450,9 @@ export function InstrumentControls() {
 function Field({ label, hint, children }: { label: string; hint: string; children: React.ReactNode }) {
   return (
     <div>
-      <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-line pb-2">
+      <div className="mb-3 flex items-baseline justify-between gap-3 border-b border-[color-mix(in_oklab,var(--gold)_28%,transparent)] pb-2">
         <span className="label label-strong">{label}</span>
-        <span className="max-w-[18ch] text-right font-mono text-[0.55rem] uppercase leading-tight tracking-[0.1em] text-ink-soft">
+        <span className="max-w-[20ch] text-right font-display text-[0.9rem] italic leading-tight text-ink-soft">
           {hint}
         </span>
       </div>

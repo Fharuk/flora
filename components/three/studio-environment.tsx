@@ -34,9 +34,9 @@ export function StudioEnvironment({ theme, palette }: { theme: Theme; palette: P
         uniforms: {
           // a bright ceiling fading into a genuinely dark floor is what gives glass
           // its dark refracted rim; a uniformly white room makes glass disappear
-          uTop: { value: new THREE.Color(isDark ? "#2a3339" : "#ffffff") },
-          uBottom: { value: new THREE.Color(isDark ? "#010203" : "#1b2124") },
-          uHorizon: { value: new THREE.Color(isDark ? "#0c1114" : "#8e9aa1") },
+          uTop: { value: new THREE.Color(isDark ? "#3a2429" : "#fffaf3") },
+          uBottom: { value: new THREE.Color(isDark ? "#0a0406" : "#2b1a1c") },
+          uHorizon: { value: new THREE.Color(isDark ? "#1c1013" : "#c4a79b") },
         },
         vertexShader: /* glsl */ `
           varying vec3 vPos;
@@ -76,17 +76,17 @@ export function StudioEnvironment({ theme, palette }: { theme: Theme; palette: P
     // key softbox, high and to the left
     panel(4.2, 7.5, palette.light, isDark ? 7.0 : 4.4, [-5.5, 2.4, 3.4]);
     // fill, lower and opposite
-    panel(3.2, 5.5, "#ffffff", isDark ? 4.6 : 2.8, [5.4, 1.0, 1.4]);
+    panel(3.2, 5.5, "#fff3e6", isDark ? 4.6 : 2.8, [5.4, 1.0, 1.4]);
     // rim from behind: separates petals from the backdrop
     panel(2.8, 5.4, palette.light, isDark ? 5.0 : 3.2, [0.4, 3.0, -5.6]);
     // thin strips — these are the vertical highlights that read as "expensive glass"
-    panel(0.45, 9.0, "#ffffff", isDark ? 6.0 : 4.2, [-1.9, 0.6, 5.4]);
+    panel(0.45, 9.0, "#fff6ec", isDark ? 6.0 : 4.2, [-1.9, 0.6, 5.4]);
     panel(0.3, 7.4, "#ffffff", isDark ? 4.2 : 3.0, [2.7, 0.2, 4.6]);
     panel(0.22, 6.0, "#ffffff", isDark ? 3.0 : 2.2, [4.6, 0.4, 2.2]);
     // dark card: reflects as a hard black line through the glass, defining its edge
     panel(5.0, 6.0, "#000000", 1.0, [-3.0, -0.6, -3.2]);
     // faint warm bounce from the floor so undersides don't die
-    panel(7.0, 2.0, isDark ? "#1b252b" : "#c8cfd3", 1.0, [0, -3.4, 2.0]);
+    panel(7.0, 2.0, isDark ? "#241318" : "#c9aa9c", 1.0, [0, -3.4, 2.0]);
 
     const target = pmrem.fromScene(rig, 0.0, 0.1, 40);
     pmrem.dispose();

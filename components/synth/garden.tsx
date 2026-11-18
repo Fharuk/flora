@@ -78,36 +78,42 @@ function EntryCard({ entry, onOpen }: { entry: GardenEntry; onOpen: () => void }
     <button
       type="button"
       onClick={onOpen}
-      className="group relative w-[19rem] shrink-0 overflow-hidden rounded-sm border border-current/10 bg-current/[0.02] p-4 text-left transition-colors hover:bg-current/[0.05] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-current/40"
+      className="card-love group relative w-[19rem] shrink-0 overflow-hidden rounded-2xl p-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]"
     >
       <div className="flex items-start justify-between gap-3">
-        <span className="font-mono text-[0.6rem] tracking-[0.28em] opacity-45">{entry.code}</span>
-        <span className="font-mono text-[0.6rem] tracking-[0.18em] opacity-35">
+        <span className="font-mono text-[0.55rem] uppercase tracking-[0.26em] text-[var(--gold-ink)]">
+          {entry.code}
+        </span>
+        <span className="font-sans text-[0.5rem] uppercase tracking-[0.22em] text-ink-soft">
           {relative(entry.created_at)}
         </span>
       </div>
 
-      <p className="mt-3 font-serif text-lg leading-tight tracking-tight">{entry.title}</p>
+      <p className="mt-3 font-display text-[1.35rem] leading-tight tracking-[-0.01em] text-ink">
+        {entry.title}
+      </p>
 
       <div className="mt-3 flex items-center gap-1.5" aria-hidden>
         {species.map((spec, i) => (
           <span
             key={`${spec!.slug}-${i}`}
-            className="h-2.5 w-2.5 rounded-full ring-1 ring-current/20"
+            className="h-2.5 w-2.5 rounded-full ring-1 ring-[color-mix(in_oklab,var(--gold)_50%,transparent)]"
             style={{
               background: `linear-gradient(140deg, ${spec!.colours.petal[0]}, ${spec!.colours.petal[1]})`,
             }}
           />
         ))}
-        <span className="ml-1 font-mono text-[0.58rem] tracking-[0.16em] opacity-40">
+        <span className="ml-1 font-sans text-[0.5rem] uppercase tracking-[0.2em] text-ink-soft">
           {entry.density} stems
         </span>
       </div>
 
       {entry.message ? (
-        <p className="mt-3 line-clamp-2 text-[0.8rem] leading-snug opacity-55">“{entry.message}”</p>
+        <p className="mt-3 line-clamp-2 font-display text-[0.95rem] italic leading-snug text-ink-soft">
+          “{entry.message}”
+        </p>
       ) : (
-        <p className="mt-3 font-mono text-[0.58rem] tracking-[0.16em] opacity-35">
+        <p className="mt-3 font-sans text-[0.5rem] uppercase tracking-[0.2em] text-ink-soft">
           {entry.creator ? `signed ${entry.creator}` : `seed ${entry.seed.toString(36).toUpperCase()}`}
         </p>
       )}
@@ -135,23 +141,23 @@ export function Garden() {
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="font-mono text-[0.62rem] tracking-[0.34em] opacity-45">06 — The garden</p>
-            <h2 className="mt-4 font-serif text-[clamp(1.9rem,4.4vw,3.2rem)] leading-[1.02] tracking-[-0.02em]">
-              Everything anyone has made.
+            <p className="eyebrow">06 — The garden</p>
+            <h2 className="mt-5 text-[clamp(2rem,4.6vw,3.4rem)] leading-[1.02] tracking-[-0.02em]">
+              Everything anyone has <span className="emphasis">made.</span>
             </h2>
           </div>
-          <p className="max-w-sm text-sm leading-relaxed opacity-55">
+          <p className="max-w-sm text-[0.9rem] leading-relaxed text-ink-soft">
             Saved compositions are public and permanent. Open one to load it back into the
             instrument — the arrangement, not a picture of it.
           </p>
         </div>
 
         {!enabled ? (
-          <p className="mt-14 rounded-sm border border-current/10 p-6 font-mono text-[0.66rem] leading-relaxed tracking-[0.16em] opacity-45">
-            NO DATABASE ATTACHED — compositions stay in the URL and can still be shared as a link.
+          <p className="mt-14 rounded-sm border border-current/10 p-6 font-sans text-[0.6rem] leading-relaxed tracking-[0.2em] opacity-45">
+            NO DATABASE ATTACHED — compositions stay in the URL and can still be gifted as a link.
           </p>
         ) : visible.length === 0 ? (
-          <p className="mt-14 rounded-sm border border-dashed border-current/15 p-10 text-center font-mono text-[0.66rem] tracking-[0.18em] opacity-40">
+          <p className="mt-14 rounded-sm border border-dashed border-current/15 p-10 text-center font-sans text-[0.6rem] uppercase tracking-[0.24em] opacity-40">
             {loaded ? "THE GARDEN IS WAITING FOR ITS FIRST COMPOSITION" : "READING THE GARDEN…"}
           </p>
         ) : (
@@ -184,15 +190,15 @@ export function Garden() {
         <div className="mt-10 flex flex-wrap items-center gap-x-8 gap-y-3">
           <motion.a
             href="/studio"
-            className="group inline-flex items-center gap-2 border-b border-current/25 pb-1 font-mono text-[0.66rem] tracking-[0.22em] transition-colors hover:border-current/60"
+            className="group inline-flex items-center gap-2 border-b border-[color-mix(in_oklab,var(--gold)_50%,transparent)] pb-1 font-sans text-[0.6rem] uppercase tracking-[0.28em] text-[var(--gold-ink)] transition-colors hover:border-[var(--gold)]"
             whileHover={{ x: 2 }}
           >
-            OPEN THE STUDIO
+            Open the studio
             <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
               →
             </span>
           </motion.a>
-          <p className="font-mono text-[0.6rem] tracking-[0.18em] opacity-35">
+          <p className="font-sans text-[0.55rem] uppercase tracking-[0.24em] text-ink-soft">
             {entries.length} COMPOSITION{entries.length === 1 ? "" : "S"} ON RECORD
           </p>
         </div>
@@ -248,19 +254,19 @@ export function SavePanel() {
     <div className="mt-6 border-t border-current/10 pt-5">
       {state === "saved" && code ? (
         <div className="space-y-3">
-          <p className="font-mono text-[0.6rem] tracking-[0.24em] opacity-45">GIFT CODE</p>
-          <p className="font-serif text-2xl tracking-[0.12em]">{code}</p>
+          <p className="label text-[var(--gold-ink)]">Gift code</p>
+          <p className="font-display text-3xl tracking-[0.18em] text-ink">{code}</p>
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
               onClick={copy}
-              className="rounded-sm border border-current/20 px-3 py-2 font-mono text-[0.6rem] tracking-[0.2em] transition-colors hover:bg-current/5"
+              className="rounded-sm border border-current/20 px-3 py-2 font-sans text-[0.55rem] uppercase tracking-[0.24em] transition-colors hover:bg-current/5"
             >
               {copied ? "COPIED" : "COPY GIFT LINK"}
             </button>
             <a
               href={`/gift/${code}`}
-              className="font-mono text-[0.6rem] tracking-[0.2em] opacity-55 underline-offset-4 hover:underline"
+              className="font-sans text-[0.55rem] uppercase tracking-[0.24em] text-[var(--gold-ink)] underline-offset-4 hover:underline"
             >
               OPEN THE UNBOXING →
             </a>
@@ -269,35 +275,33 @@ export function SavePanel() {
         </div>
       ) : (
         <div className="space-y-3">
-          <p className="font-mono text-[0.6rem] tracking-[0.24em] opacity-45">
-            SAVE TO THE GARDEN
-          </p>
+          <p className="label text-[var(--gold-ink)]">Save &amp; seal</p>
           <div className="grid gap-2 sm:grid-cols-2">
             <input
               value={creator}
               onChange={(e) => setCreator(e.target.value)}
-              placeholder="signed…"
+              placeholder="Your name"
               maxLength={48}
-              className="w-full rounded-sm border border-current/15 bg-transparent px-3 py-2 text-sm outline-none placeholder:opacity-30 focus:border-current/40"
+              className="w-full rounded-lg border border-[color-mix(in_oklab,var(--gold)_32%,transparent)] bg-transparent px-3 py-2.5 font-display text-[0.95rem] outline-none placeholder:italic placeholder:text-ink-soft/70 focus:border-[var(--gold)]"
             />
             <input
               value={message}
               onChange={(e) => setMessage(e.target.value)}
-              placeholder="a note for the recipient"
+              placeholder="A dedication, if you like"
               maxLength={180}
-              className="w-full rounded-sm border border-current/15 bg-transparent px-3 py-2 text-sm outline-none placeholder:opacity-30 focus:border-current/40"
+              className="w-full rounded-lg border border-[color-mix(in_oklab,var(--gold)_32%,transparent)] bg-transparent px-3 py-2.5 font-display text-[0.95rem] outline-none placeholder:italic placeholder:text-ink-soft/70 focus:border-[var(--gold)]"
             />
           </div>
           <button
             type="button"
             onClick={save}
             disabled={state === "saving"}
-            className="w-full rounded-sm border border-current/25 py-2.5 font-mono text-[0.62rem] tracking-[0.24em] transition-colors hover:bg-current/5 disabled:opacity-40"
+            className="btn btn-gold w-full"
           >
-            {state === "saving" ? "SAVING…" : "SAVE & GET A GIFT CODE"}
+            {state === "saving" ? "Sealing…" : "Seal it & get a gift code"}
           </button>
           {state === "error" ? (
-            <p className="font-mono text-[0.58rem] leading-relaxed tracking-[0.14em] opacity-45">
+            <p className="font-sans text-[0.55rem] leading-relaxed tracking-[0.2em] opacity-45">
               COULD NOT SAVE — THE LINK ABOVE STILL WORKS.
             </p>
           ) : null}

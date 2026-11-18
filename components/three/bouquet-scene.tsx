@@ -33,19 +33,26 @@ function useBackdropTexture(theme: Theme, palette: Palette) {
     const ctx = canvas.getContext("2d")!;
     const grad = ctx.createLinearGradient(0, 0, 0, 512);
     if (theme === "dark") {
-      grad.addColorStop(0, "#0d1216");
-      grad.addColorStop(0.42, "#0a0e11");
-      grad.addColorStop(0.62, "#080b0e");
-      grad.addColorStop(1, "#04070a");
+      // velvet: burgundy fading to near-black, never a neutral grey
+      grad.addColorStop(0, "#241318");
+      grad.addColorStop(0.42, "#1b0e12");
+      grad.addColorStop(0.62, "#150b0e");
+      grad.addColorStop(1, "#0c0507");
     } else {
       // Reaches the floor's fog colour *above* the horizon row, then holds it flat.
       // Anything below that row is the floor seen edge-on; if the background were still
       // mid-gradient there, the horizon would draw itself as a hard line across the frame.
-      grad.addColorStop(0, "#fcfcfb");
-      grad.addColorStop(0.12, "#f2f4f4");
-      grad.addColorStop(0.22, "#e2e6e8");
-      grad.addColorStop(0.3, "#c9ced1");
-      grad.addColorStop(1, "#c9ced1");
+      // Champagne: still bright at the top, but the sweep falls away into a deeper rose
+      // at the floor. The first pass held one flat mid-tone across the bottom 70%, which
+      // left the glass nothing to be bright against and the whole scene read as milk.
+      grad.addColorStop(0, "#fffaf4");
+      grad.addColorStop(0.14, "#fbeade");
+      grad.addColorStop(0.3, "#e6c8b8");
+      // The floor plane is seen edge-on and its far edge lands near this row, so the
+      // backdrop must already be at the floor's fog colour by then — otherwise the edge
+      // of the plane draws itself as a hard horizontal line across the frame.
+      grad.addColorStop(0.44, "#b0807a");
+      grad.addColorStop(1, "#b0807a");
     }
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 8, 512);
@@ -111,7 +118,7 @@ function Motes({ theme, animated, count = 150 }: { theme: Theme; animated: boole
         blending: THREE.AdditiveBlending,
         uniforms: {
           uTime: { value: 0 },
-          uColor: { value: new THREE.Color(theme === "dark" ? "#cfe6f2" : "#ffffff") },
+          uColor: { value: new THREE.Color(theme === "dark" ? "#f0cdb4" : "#fff6ea") },
           uOpacity: { value: theme === "dark" ? 0.34 : 0.1 },
         },
         vertexShader: /* glsl */ `
@@ -253,7 +260,7 @@ function Lights({ theme, palette }: { theme: Theme; palette: Palette }) {
   useFrame((state) => {
     if (!key.current) return;
     // the key light breathes very slightly, so highlights never look frozen
-    key.current.intensity = (isDark ? 46 : 30) * (1 + Math.sin(state.clock.elapsedTime * 0.35) * 0.05);
+    key.current.intensity = (isDark ? 52 : 42) * (1 + Math.sin(state.clock.elapsedTime * 0.35) * 0.05);
   });
 
   return (
@@ -264,16 +271,21 @@ function Lights({ theme, palette }: { theme: Theme; palette: Palette }) {
         position={[-4.6, 7.2, 4.4]}
         angle={0.62}
         penumbra={1}
-        intensity={isDark ? 46 : 30}
+        intensity={isDark ? 52 : 42}
         color={palette.light}
         castShadow
         shadow-mapSize={[1024, 1024]}
         shadow-bias={-0.00012}
         shadow-normalBias={0.045}
       />
-      <directionalLight position={[5, 3.4, 2.2]} intensity={isDark ? 1.4 : 2.0} color="#ffffff" />
+      <directionalLight position={[5, 3.4, 2.2]} intensity={isDark ? 1.5 : 2.1} color={isDark ? "#ffd9c4" : "#fff4e6"} />
       <pointLight position={[0, 2.6, -3.6]} intensity={isDark ? 12 : 5} color={palette.light} distance={12} />
-      <pointLight position={[0, 0.4, 2.6]} intensity={isDark ? 4 : 8} color="#ffffff" distance={8} />
+      {/* Fill, lifted off the floor. At 0.4 it sat close enough to the ground to scorch a
+          bright wedge into it — invisible under the hero card, glaring on the studio page. */}
+      <pointLight position={[0, 1.5, 2.6]} intensity={isDark ? 3 : 5} color={isDark ? "#ffe3cd" : "#fff8ee"} distance={8} />
+      {/* a cold rim from behind: the contrast between warm key and cool rim is what
+          makes glass look expensive instead of milky */}
+      <pointLight position={[-3.4, 2.2, -4.2]} intensity={isDark ? 7 : 4} color="#bcd3e8" distance={14} />
     </>
   );
 }
@@ -333,7 +345,7 @@ function Scene({
         minPolarAngle={0.6}
         maxPolarAngle={1.46}
         enableRotate
-        target={compact ? [0, 1.75, 0] : [0, 2.35, 0]}
+        target={compact ? [0, 1.62, 0] : [0, 2.35, 0]}
         enableDamping
         dampingFactor={0.055}
         autoRotate={animated}
@@ -341,7 +353,7 @@ function Scene({
       />
       <Effects theme={theme} quality={quality} focusDistance={0.024} />
       <Backdrop theme={theme} palette={palette} />
-      <fog attach="fog" args={[theme === "dark" ? "#04070a" : "#c9ced1", theme === "dark" ? 7 : 10, theme === "dark" ? 19 : 24]} />
+      <fog attach="fog" args={[theme === "dark" ? "#0c0507" : "#b0807a", theme === "dark" ? 7 : 12, theme === "dark" ? 19 : 26]} />
     </>
   );
 }
@@ -403,7 +415,7 @@ export function BouquetCanvas({
           fov: compact ? 34 : 30,
           near: 0.1,
           far: 80,
-          position: compact ? [1.4, 2.55, 13.6] : [1.9, 2.75, 9.8],
+          position: compact ? [0.95, 2.3, 11.2] : [1.9, 2.75, 9.8],
         }}
         gl={{
           antialias: false,
@@ -415,7 +427,7 @@ export function BouquetCanvas({
         }}
         frameloop={visible ? "always" : "demand"}
         onCreated={({ gl }) => {
-          gl.setClearColor(new THREE.Color(theme === "dark" ? "#06090b" : "#c9ced1"));
+          gl.setClearColor(new THREE.Color(theme === "dark" ? "#120a0b" : "#b0807a"));
         }}
       >
         <Scene

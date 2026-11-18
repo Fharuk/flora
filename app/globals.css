@@ -1,49 +1,90 @@
 @import "tailwindcss";
 
 /* ============================================================== flora-synth
-   Two complete themes, not a dark filter: bone gallery by day, black vitrine
-   by night. Everything below resolves from these six variables plus the type
-   stack, so a theme switch is a single attribute on <html>.
+   "Candlelit atelier."
+
+   Two complete themes, not a dark filter: champagne and ivory by day, velvet and
+   burgundy by night. The register is a florist's counter at dusk and a jewellery
+   house after hours — warm ivory instead of bone white, garnet instead of olive,
+   antique gold instead of grey hairlines.
+
+   Everything resolves from a small set of variables, so a theme switch is a single
+   attribute on <html>.
    ========================================================================= */
 
 :root {
-  --paper: #f2efe9;
-  --paper-2: #e8e4dc;
-  --ink: #14110f;
-  --ink-soft: #4a463f;
-  --line: rgba(20, 17, 15, 0.14);
-  --line-strong: rgba(20, 17, 15, 0.26);
-  --accent: #7b8b4e;
-  --glass: rgba(248, 247, 243, 0.82);
-  --glass-line: rgba(255, 255, 255, 0.7);
-  --shadow: 0 30px 80px -40px rgba(20, 17, 15, 0.45);
-  --scene-bg: #e9eef1;
-  --case-top: #fbfbf8;
-  --case-bottom: #b2bcb7;
+  /* — paper. Warm ivory, the colour of good cream card stock under lamplight. */
+  --paper: #fbf4ec;
+  --paper-2: #f5e9dd;
+  --paper-3: #f2e2d6;
 
-  /* The full-screen menu is a black vitrine in both themes, so its colours are fixed
-     rather than derived from --ink/--paper. Using theme tokens here inverted the panel
-     and its text together, which made the menu illegible in light mode. */
-  --veil: #14110f;
-  --bone: #f2efe9;
+  /* — ink. A deep oxblood brown, never pure black: black reads cheap next to ivory. */
+  --ink: #2a1215;
+  --ink-soft: #7c5b57;
+
+  /* — hairlines carry the warmth of the palette rather than a neutral grey */
+  --line: rgba(122, 58, 52, 0.16);
+  --line-strong: rgba(122, 58, 52, 0.32);
+
+  /* — the two signature metals. Garnet is "love"; gold is "luxury". */
+  --accent: #9e2b3e;
+  --accent-soft: #c2606f;
+  --gold: #a9803f;
+  --gold-soft: #d3b483;
+  --gold-ink: #8a6631;
+  --blush: #f3d9d2;
+
+  --glass: rgba(255, 249, 243, 0.78);
+  --glass-line: rgba(255, 255, 255, 0.85);
+  --shadow: 0 34px 90px -46px rgba(74, 22, 28, 0.5);
+
+  /* — the 3D studio. A warm sweep, not a cool one; glass picks this up as rose. */
+  --scene-bg: #f0dfd4;
+  --case-top: #f7ebe0;
+  --case-bottom: #a8817a;
+
+  /* The full-screen menu is a burgundy vitrine in both themes, so its colours are fixed
+     rather than derived from --ink/--paper. Deriving them inverted the panel and its text
+     together, which made the menu illegible in light mode. */
+  --veil: #1a0e11;
+  --bone: #fbf4ec;
+
+  /* — candlelight: the warm bloom that sits behind sections */
+  --glow: rgba(196, 122, 92, 0.16);
+  --glow-strong: rgba(158, 43, 62, 0.1);
 
   color-scheme: light;
 }
 
 [data-theme="dark"] {
-  --paper: #06080a;
-  --paper-2: #0b0e11;
-  --ink: #f2efe9;
-  --ink-soft: #a8a49b;
-  --line: rgba(242, 239, 233, 0.13);
-  --line-strong: rgba(242, 239, 233, 0.26);
-  --accent: #c9f27a;
-  --glass: rgba(9, 12, 14, 0.78);
-  --glass-line: rgba(255, 255, 255, 0.16);
-  --shadow: 0 40px 100px -50px rgba(0, 0, 0, 0.95);
-  --scene-bg: #05070a;
-  --case-top: #14181b;
-  --case-bottom: #04070a;
+  /* — velvet. Burgundy-black rather than the blue-black of a generic dark mode. */
+  --paper: #150a0d;
+  --paper-2: #1e1014;
+  --paper-3: #26141a;
+
+  --ink: #f7eadf;
+  --ink-soft: #c4a79e;
+
+  --line: rgba(247, 234, 223, 0.13);
+  --line-strong: rgba(247, 234, 223, 0.28);
+
+  --accent: #e4899b;
+  --accent-soft: #f0b3bd;
+  --gold: #d9b87a;
+  --gold-soft: #e8cf9f;
+  --gold-ink: #e0bf85;
+  --blush: #4a2029;
+
+  --glass: rgba(26, 14, 17, 0.74);
+  --glass-line: rgba(255, 226, 205, 0.16);
+  --shadow: 0 44px 110px -52px rgba(0, 0, 0, 0.95);
+
+  --scene-bg: #120a0b;
+  --case-top: #2a171c;
+  --case-bottom: #0b0506;
+
+  --glow: rgba(180, 96, 74, 0.2);
+  --glow-strong: rgba(228, 137, 155, 0.12);
 
   color-scheme: dark;
 }
@@ -51,21 +92,29 @@
 @theme inline {
   --color-paper: var(--paper);
   --color-paper-2: var(--paper-2);
+  --color-paper-3: var(--paper-3);
   --color-ink: var(--ink);
   --color-ink-soft: var(--ink-soft);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
   --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-blush: var(--blush);
   --color-scene: var(--scene-bg);
   --color-veil: var(--veil);
   --color-bone: var(--bone);
 
-  --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  /* Cormorant carries the romance: high contrast, fine hairlines, a proper italic. */
+  --font-display: "Cormorant Garamond", "Iowan Old Style", "Times New Roman", serif;
+  --font-title: "Instrument Serif", "Iowan Old Style", Georgia, serif;
   --font-sans: "Schibsted Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 
   --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out-quint: cubic-bezier(0.83, 0, 0.17, 1);
+  --ease-silk: cubic-bezier(0.22, 0.61, 0.16, 1);
 }
 
 /* -------------------------------------------------------------------- base */
@@ -93,10 +142,24 @@
     transition: background-color 0.6s var(--ease-out-expo), color 0.6s var(--ease-out-expo);
   }
 
+  /* A single candlelight wash behind the whole page. Two very wide, very soft radial
+     blooms — one rose, one gold — so no section ever sits on a flat field. */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(70rem 50rem at 12% -8%, var(--glow), transparent 62%),
+      radial-gradient(60rem 45rem at 92% 8%, var(--glow-strong), transparent 60%);
+    opacity: 0.9;
+  }
+
   /* the menu overlay fades in via CSS and unmounts immediately on close, so a stalled
      animation can never leave an invisible full-screen dialog over the page */
   .menu-veil {
-    animation: menu-veil-in 0.25s var(--ease-out-expo) both;
+    animation: menu-veil-in 0.32s var(--ease-out-expo) both;
   }
   @keyframes menu-veil-in {
     from { opacity: 0; }
@@ -114,7 +177,7 @@
   }
 
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--gold);
     outline-offset: 3px;
   }
 
@@ -123,6 +186,15 @@
   }
   p {
     text-wrap: pretty;
+  }
+
+  /* Cormorant is a light-face family; at display sizes it wants negative tracking and
+     tight leading to read as engraved rather than set. */
+  h1, h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.018em;
+    line-height: 0.98;
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -138,7 +210,7 @@
     ::-webkit-scrollbar { width: 9px; height: 9px; }
     ::-webkit-scrollbar-track { background: var(--paper); }
     ::-webkit-scrollbar-thumb {
-      background: color-mix(in oklab, var(--ink) 22%, transparent);
+      background: color-mix(in oklab, var(--gold) 45%, transparent);
       border-radius: 99px;
       border: 2px solid var(--paper);
     }
@@ -148,24 +220,51 @@
 /* --------------------------------------------------------------- components */
 
 @layer components {
-  /* small-caps mono label used everywhere instead of headings for meta text */
+  /* Small letterspaced sans, not mono: the meta text of a fashion house rather than
+     the readout of an instrument. Mono is reserved for numbers and codes. */
   .label {
-    font-family: var(--font-mono);
+    font-family: var(--font-sans);
     font-size: 0.625rem;
-    letter-spacing: 0.22em;
+    font-weight: 500;
+    letter-spacing: 0.3em;
     text-transform: uppercase;
-    color: color-mix(in oklab, var(--ink) 55%, transparent);
+    color: color-mix(in oklab, var(--ink) 52%, transparent);
   }
 
   .label-strong {
     color: var(--ink);
   }
 
+  /* the numbered section eyebrow, set in gold between two hairlines */
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-family: var(--font-sans);
+    font-size: 0.6rem;
+    font-weight: 500;
+    letter-spacing: 0.34em;
+    text-transform: uppercase;
+    color: var(--gold-ink);
+  }
+  .eyebrow::before {
+    content: "";
+    width: 1.75rem;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold));
+  }
+
   .display {
     font-family: var(--font-display);
     font-weight: 400;
     letter-spacing: -0.02em;
-    line-height: 0.92;
+    line-height: 0.94;
+  }
+
+  /* the emphasis word inside a heading: garnet, italic, and a little air */
+  .emphasis {
+    font-style: italic;
+    color: var(--accent);
   }
 
   .rule {
@@ -174,18 +273,31 @@
     background: var(--line);
   }
 
+  /* A hairline that fades at both ends and passes through gold in the middle. This is
+     the single most repeated ornament in the design — it replaces every flat divider. */
+  .rule-gold {
+    height: 1px;
+    width: 100%;
+    border: 0;
+    background: linear-gradient(90deg, transparent, var(--gold-soft) 22%, var(--gold) 50%, var(--gold-soft) 78%, transparent);
+    opacity: 0.55;
+  }
+
   /* a hairline box, the workhorse of this layout */
   .box {
     border: 1px solid var(--line);
   }
 
-  /* frosted panel over the 3D scene */
+  /* frosted panel over the 3D scene — warm glass, not grey glass */
   .frost {
     background: var(--glass);
     border: 1px solid var(--glass-line);
-    backdrop-filter: blur(22px) saturate(140%);
-    -webkit-backdrop-filter: blur(22px) saturate(140%);
-    box-shadow: var(--shadow), inset 0 1px 0 rgba(255, 255, 255, 0.28);
+    backdrop-filter: blur(26px) saturate(150%);
+    -webkit-backdrop-filter: blur(26px) saturate(150%);
+    box-shadow:
+      var(--shadow),
+      inset 0 1px 0 rgba(255, 255, 255, 0.5),
+      0 0 0 1px rgba(180, 130, 90, 0.1);
   }
 
   .btn {
@@ -194,60 +306,80 @@
     justify-content: center;
     gap: 0.5rem;
     border-radius: 999px;
-    font-size: 0.78rem;
+    font-family: var(--font-sans);
+    font-size: 0.62rem;
     font-weight: 500;
-    letter-spacing: 0.02em;
-    padding: 0.8rem 1.35rem;
-    transition: background-color 0.35s var(--ease-out-expo), color 0.35s, border-color 0.35s,
-      transform 0.35s var(--ease-out-expo);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 0.85rem 1.5rem;
+    transition: background-color 0.4s var(--ease-out-expo), color 0.4s, border-color 0.4s,
+      box-shadow 0.4s var(--ease-out-expo), transform 0.4s var(--ease-out-expo);
   }
   .btn:active {
-    transform: scale(0.985);
+    transform: scale(0.982);
   }
 
+  /* The primary button is a garnet lozenge with a lit top edge — the look of enamel,
+     not of a flat fill. */
   .btn-primary {
-    background: var(--ink);
-    color: var(--paper);
+    position: relative;
+    background: linear-gradient(178deg, #b03a4c 0%, var(--accent) 46%, #7d1f30 100%);
+    color: #fff5ef;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 214, 196, 0.4),
+      0 12px 30px -14px rgba(122, 24, 40, 0.75);
   }
   .btn-primary:hover {
-    background: var(--accent);
-    color: var(--paper);
+    background: linear-gradient(178deg, #c14a5c 0%, #ab3446 46%, #8b2636 100%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 224, 208, 0.5),
+      0 16px 38px -14px rgba(122, 24, 40, 0.85);
+  }
+
+  .btn-gold {
+    background: linear-gradient(178deg, #d9b87a 0%, var(--gold) 52%, #8a6631 100%);
+    color: #2a1215;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 244, 214, 0.6),
+      0 12px 30px -16px rgba(138, 102, 49, 0.7);
   }
 
   .btn-ghost {
-    border: 1px solid var(--line-strong);
+    border: 1px solid color-mix(in oklab, var(--gold) 55%, transparent);
     color: var(--ink);
+    background: color-mix(in oklab, var(--paper) 40%, transparent);
+    backdrop-filter: blur(8px);
   }
   .btn-ghost:hover {
-    border-color: var(--ink);
-    background: color-mix(in oklab, var(--ink) 5%, transparent);
+    border-color: var(--gold);
+    background: color-mix(in oklab, var(--gold) 12%, transparent);
   }
 
-  /* range inputs — thin, precise, matching the hairline language */
+  /* range inputs — thin, precise, with a gold bead */
   .range {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
     height: 1px;
-    background: var(--line-strong);
+    background: color-mix(in oklab, var(--gold) 40%, var(--line-strong));
     outline: none;
     cursor: pointer;
   }
   .range::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
-    width: 11px;
-    height: 11px;
+    width: 12px;
+    height: 12px;
     border-radius: 999px;
-    background: var(--ink);
+    background: linear-gradient(160deg, var(--gold-soft), var(--gold));
     border: 2px solid var(--paper);
-    box-shadow: 0 0 0 1px var(--line-strong);
+    box-shadow: 0 0 0 1px color-mix(in oklab, var(--gold) 60%, transparent), 0 2px 8px rgba(74, 22, 28, 0.35);
   }
   .range::-moz-range-thumb {
-    width: 11px;
-    height: 11px;
+    width: 12px;
+    height: 12px;
     border-radius: 999px;
-    background: var(--ink);
+    background: linear-gradient(160deg, var(--gold-soft), var(--gold));
     border: 2px solid var(--paper);
   }
 
@@ -257,13 +389,13 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    opacity: 0.22;
+    opacity: 0.11;
     mix-blend-mode: multiply;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
   }
   [data-theme="dark"] .grain::after {
     mix-blend-mode: screen;
-    opacity: 0.12;
+    opacity: 0.1;
   }
 
   .hide-scrollbar {
@@ -277,9 +409,56 @@
   .hatch {
     background-image: repeating-linear-gradient(
       -45deg,
-      color-mix(in oklab, var(--ink) 7%, transparent) 0 1px,
-      transparent 1px 7px
+      color-mix(in oklab, var(--gold) 22%, transparent) 0 1px,
+      transparent 1px 8px
     );
+  }
+
+  /* ------------------------------------------------------------ ornament */
+
+  /* The wax seal: a garnet lozenge of light with an embossed rim. Used on the gift
+     page and as the section divider motif. */
+  .seal {
+    position: relative;
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    background:
+      radial-gradient(120% 120% at 32% 24%, #c14a5c 0%, var(--accent) 42%, #6d1a29 100%);
+    box-shadow:
+      inset 0 2px 6px rgba(255, 190, 170, 0.35),
+      inset 0 -3px 10px rgba(40, 6, 12, 0.6),
+      0 10px 30px -12px rgba(90, 16, 28, 0.8);
+    color: #ffe9df;
+  }
+  .seal::after {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 214, 196, 0.28);
+  }
+
+  /* velvet: the dark panel treatment, a soft sheen raked across burgundy */
+  .velvet {
+    background:
+      radial-gradient(120% 90% at 18% 0%, rgba(196, 122, 92, 0.16), transparent 58%),
+      radial-gradient(100% 80% at 100% 100%, rgba(158, 43, 62, 0.18), transparent 60%),
+      var(--paper-2);
+  }
+
+  /* a card that lifts on hover with a warm bloom beneath it */
+  .card-love {
+    position: relative;
+    border: 1px solid var(--line);
+    background: linear-gradient(180deg, color-mix(in oklab, var(--paper) 92%, var(--blush)), var(--paper));
+    transition: border-color 0.5s var(--ease-silk), box-shadow 0.5s var(--ease-silk),
+      transform 0.5s var(--ease-silk);
+  }
+  .card-love:hover {
+    border-color: color-mix(in oklab, var(--gold) 55%, transparent);
+    box-shadow: 0 26px 60px -34px rgba(74, 22, 28, 0.5);
+    transform: translateY(-2px);
   }
 }
 
@@ -290,6 +469,16 @@
   .drag-none {
     -webkit-user-drag: none;
     user-select: none;
+  }
+  .font-title {
+    font-family: var(--font-title);
+  }
+  /* a gold foil gradient for single words that need to feel engraved */
+  .foil {
+    background: linear-gradient(96deg, var(--gold-ink), var(--gold), var(--gold-soft), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
   }
 }
 
@@ -308,4 +497,20 @@
 
 @media (prefers-reduced-motion: reduce) {
   .garden-track { animation: none; }
+}
+
+/* ── slow ornaments ────────────────────────────────────────────────────────
+   Two movements only, both deliberately near-imperceptible: a breathing glow
+   and a drifting sheen. Anything faster reads as a product demo, not a house. */
+@keyframes candle-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50%      { opacity: 0.85; transform: scale(1.04); }
+}
+
+.candle {
+  animation: candle-breathe 9s var(--ease-in-out-quint) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .candle { animation: none; }
 }

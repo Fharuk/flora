@@ -9,11 +9,11 @@ import { useSynth } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
 const TONE: Record<Rarity, string> = {
-  common: "border-current/20 opacity-60",
-  rare: "border-[#7b8b4e]/45 text-[#5e6b3a]",
-  exotic: "border-[#c08a2e]/50 text-[#9a6b18]",
-  legendary: "border-[#a855f7]/50 text-[#8b3fd4]",
-  mythic: "border-current/60",
+  common: "border-[color-mix(in_oklab,var(--ink)_22%,transparent)] text-ink-soft",
+  rare: "border-[color-mix(in_oklab,var(--gold)_55%,transparent)] text-[var(--gold-ink)]",
+  exotic: "border-[color-mix(in_oklab,#c98a3a_60%,transparent)] text-[#8a5a1c] dark:text-[#e0b07a]",
+  legendary: "border-[color-mix(in_oklab,var(--accent)_60%,transparent)] text-[var(--accent)]",
+  mythic: "border-[var(--accent)] text-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)]",
 };
 
 /** The collectibility tier, shown beside the botanical record rather than instead of it. */
@@ -21,7 +21,7 @@ export function RarityChip({ rarity, className }: { rarity: Rarity; className?: 
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border px-2 py-[0.15rem] font-mono text-[0.5rem] uppercase tracking-[0.2em] dark:border-current/30",
+        "inline-flex items-center gap-1.5 rounded-full border px-2 py-[0.15rem] font-sans text-[0.46rem] uppercase tracking-[0.22em]",
         TONE[rarity],
         className
       )}
@@ -83,13 +83,13 @@ export function HybridLab() {
     <section id="lab" className="relative border-t border-line px-6 py-24 md:py-32">
       <div className="mx-auto grid max-w-6xl gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:gap-16">
         <div>
-          <p className="font-mono text-[0.62rem] uppercase tracking-[0.34em] text-ink-soft">
+          <p className="eyebrow">
             03 — The crossing
           </p>
-          <h2 className="mt-4 font-display text-[clamp(1.9rem,4.4vw,3.2rem)] leading-[1.02] tracking-[-0.02em]">
+          <h2 className="mt-5 text-[clamp(2rem,4.6vw,3.4rem)] leading-[1.02] tracking-[-0.02em]">
             Two specimens.
             <br />
-            One that has never existed.
+            One that has never <span className="emphasis">existed.</span>
           </h2>
           <p className="mt-5 max-w-md text-sm leading-relaxed text-ink-soft">
             A hybrid inherits one parent&apos;s architecture and the other&apos;s surface, then
@@ -110,7 +110,7 @@ export function HybridLab() {
                 <select
                   value={field.value}
                   onChange={(e) => field.onChange(e.target.value)}
-                  className="mt-1.5 w-full appearance-none rounded-md border border-line bg-transparent px-3 py-2.5 font-display text-base outline-none focus:border-[var(--line-strong)]"
+                  className="mt-1.5 w-full appearance-none rounded-lg border border-[color-mix(in_oklab,var(--gold)_32%,transparent)] bg-transparent px-3 py-2.5 font-display text-[1.05rem] outline-none focus:border-[var(--gold)]"
                 >
                   {specimens.map((s) => (
                     <option key={s.slug} value={s.slug} className="bg-paper text-ink">
@@ -125,7 +125,7 @@ export function HybridLab() {
           <button
             type="button"
             onClick={cross}
-            className="mt-4 inline-flex items-center gap-2 rounded-full border border-line px-5 py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.22em] transition-colors hover:bg-ink/5"
+            className="btn btn-ghost mt-4"
           >
             <Shuffle size={12} aria-hidden />
             Cross again
@@ -133,7 +133,8 @@ export function HybridLab() {
         </div>
 
         {/* the child */}
-        <div className="relative overflow-hidden rounded-2xl border border-line bg-[var(--glass)] p-7 backdrop-blur-md md:p-9">
+        <div className="frost relative overflow-hidden rounded-[1.6rem] p-7 md:p-10">
+          <span aria-hidden className="pointer-events-none absolute inset-3 rounded-[1.25rem] border border-[color-mix(in_oklab,var(--gold)_26%,transparent)]" />
           {hybrid ? (
             <div
               className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full opacity-25 blur-3xl"
@@ -155,14 +156,14 @@ export function HybridLab() {
                 <RarityChip rarity={hybrid.rarity} />
               </div>
 
-              <h3 className="mt-5 font-display text-[clamp(1.7rem,3.4vw,2.4rem)] leading-[1.04] tracking-[-0.015em]">
+              <h3 className="mt-5 font-display text-[clamp(1.8rem,3.6vw,2.6rem)] leading-[1.02] tracking-[-0.015em] text-ink">
                 {hybrid.name}
               </h3>
               <p className="mt-1 font-display text-sm italic text-ink-soft">{hybrid.latin}</p>
 
               <p className="mt-5 text-sm leading-relaxed text-ink-soft">{hybrid.blurb}</p>
 
-              <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-line pt-5 font-mono text-[0.55rem] uppercase tracking-[0.16em] text-ink-soft">
+              <dl className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3 border-t border-[color-mix(in_oklab,var(--gold)_28%,transparent)] pt-5 font-sans text-[0.52rem] uppercase tracking-[0.2em] text-ink-soft">
                 <div>
                   <dt className="opacity-70">Form</dt>
                   <dd className="mt-1 text-ink">{hybrid.form}</dd>
@@ -185,14 +186,14 @@ export function HybridLab() {
                 <button
                   type="button"
                   onClick={putInVase}
-                  className="rounded-full bg-ink px-5 py-2.5 font-mono text-[0.6rem] uppercase tracking-[0.22em] text-paper transition-opacity hover:opacity-85"
+                  className="btn btn-primary"
                 >
                   {added ? "In the vase" : "Put it in the vase"}
                 </button>
                 <button
                   type="button"
                   onClick={cross}
-                  className="font-mono text-[0.6rem] uppercase tracking-[0.2em] text-ink-soft underline-offset-4 hover:underline"
+                  className="font-sans text-[0.55rem] uppercase tracking-[0.24em] text-[var(--gold-ink)] underline-offset-4 hover:underline"
                 >
                   Same parents, new seed
                 </button>

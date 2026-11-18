@@ -40,7 +40,7 @@ export function Studio() {
       <div className="grid gap-8 lg:grid-cols-[1.02fr_0.98fr] lg:gap-12">
         {/* ---------------------------------------------------------- the vase */}
         <div className="lg:sticky lg:top-24 lg:h-[calc(100svh-8rem)]">
-          <div className="relative h-[52svh] min-h-[340px] overflow-hidden rounded-sm border border-current/10 bg-scene lg:h-full">
+          <div className="relative h-[52svh] min-h-[340px] overflow-hidden rounded-[1.4rem] border border-[color-mix(in_oklab,var(--gold)_45%,transparent)] bg-scene shadow-[0_30px_80px_-50px_rgba(74,22,28,0.55)] lg:h-full">
             <BouquetCanvas
               key={`${theme}-${config.palette}`}
               config={config}
@@ -58,8 +58,8 @@ export function Studio() {
         {/* ------------------------------------------------------- the controls */}
         <div className="min-w-0">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h1 className="font-serif text-[clamp(1.8rem,3.4vw,2.6rem)] leading-none tracking-[-0.02em]">
-              The studio
+            <h1 className="font-display text-[clamp(2rem,3.8vw,2.9rem)] leading-none tracking-[-0.02em]">
+              The <span className="emphasis">studio</span>
             </h1>
             <div className="flex items-center gap-2">
               <AudioToggle />
@@ -72,12 +72,13 @@ export function Studio() {
           </p>
 
           <div className="mt-8">
-            <InstrumentControls />
+            {/* the studio supplies its own title and copy, so the controls come bare */}
+            <InstrumentControls bare />
           </div>
 
           <div className="mt-8 rounded-sm border border-current/10 p-5">
             <p className="font-mono text-[0.6rem] tracking-[0.24em] opacity-45">THE ARTIFACT</p>
-            <p className="mt-2 text-sm leading-relaxed opacity-60">
+            <p className="mt-2 text-[0.9rem] leading-relaxed text-ink-soft">
               Take the bouquet out of the browser. The mesh you are looking at exports as a
               watertight STL at 20:1 scale — printable, paintable, and nothing to do with glass.
             </p>
@@ -85,23 +86,23 @@ export function Studio() {
               type="button"
               onClick={exportModel}
               disabled={printing}
-              className="mt-4 inline-flex items-center gap-2 rounded-sm border border-current/25 px-4 py-2.5 font-mono text-[0.62rem] tracking-[0.2em] transition-colors hover:bg-current/5 disabled:opacity-50"
+              className="btn btn-ghost mt-4 disabled:opacity-50"
             >
               {printing ? (
                 <Loader2 size={13} className="animate-spin" aria-hidden />
               ) : (
                 <Download size={13} aria-hidden />
               )}
-              {printing ? "BUILDING MESH…" : "DOWNLOAD STL"}
+              {printing ? "Building mesh…" : "Download STL"}
             </button>
           </div>
 
           <SavePanel />
 
-          <div className="mt-8 flex flex-wrap gap-x-8 gap-y-2 font-mono text-[0.58rem] tracking-[0.18em] opacity-35">
-            <span>STATELESS UNTIL SAVED</span>
-            <span>THE LINK IS THE RECIPE</span>
-            <span>NOTHING IS A PHOTOGRAPH</span>
+          <div className="mt-8 flex flex-wrap gap-x-8 gap-y-2 font-sans text-[0.5rem] uppercase tracking-[0.26em] text-ink-soft">
+            <span>Composed in the browser</span>
+            <span>The link is the recipe</span>
+            <span>Nothing is a photograph</span>
           </div>
         </div>
       </div>

@@ -64,40 +64,58 @@ export function GiftExperience({ entry }: { entry: GardenEntry }) {
         transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
         style={{ pointerEvents: opened ? "none" : "auto" }}
       >
-        <div className="w-full max-w-md rounded-sm border border-current/12 bg-[var(--glass)] p-8 text-center backdrop-blur-xl md:p-10">
-          <p className="font-mono text-[0.58rem] tracking-[0.36em] opacity-45">GIFT · {entry.code}</p>
-          <h1 className="mt-5 font-serif text-[clamp(1.7rem,4.6vw,2.5rem)] leading-[1.06] tracking-[-0.02em]">
-            {entry.title}
-          </h1>
-          <p className="mt-4 text-sm leading-relaxed opacity-60">
-            {entry.message
-              ? `“${entry.message}”`
-              : "Someone composed this for you. It has been waiting, unopened, ever since."}
-          </p>
+        <div className="frost relative w-full max-w-[30rem] rounded-[1.75rem] p-8 text-center md:p-11">
+          {/* gold frame, inset like the edge of a correspondence card */}
+          <span aria-hidden className="pointer-events-none absolute inset-3 rounded-[1.35rem] border border-[color-mix(in_oklab,var(--gold)_38%,transparent)]" />
 
-          <div className="mt-6 flex items-center justify-center gap-2" aria-hidden>
-            {species.map((spec, i) => (
-              <span
-                key={`${spec!.slug}-${i}`}
-                className="h-2 w-2 rounded-full ring-1 ring-current/20"
-                style={{
-                  background: `linear-gradient(140deg, ${spec!.colours.petal[0]}, ${spec!.colours.petal[1]})`,
-                }}
-              />
-            ))}
+          <div className="relative">
+            <p className="label text-[var(--gold-ink)]">Sealed correspondence · {entry.code}</p>
+
+            {/* the wax seal */}
+            <div className="mt-7 flex justify-center">
+              <div className="seal candle h-20 w-20">
+                <span className="font-display text-2xl italic leading-none">
+                  {(entry.creator ?? entry.title).trim().charAt(0).toUpperCase()}
+                </span>
+              </div>
+            </div>
+
+            <h1 className="mt-7 font-display text-[clamp(1.9rem,5vw,2.8rem)] leading-[1.02] tracking-[-0.015em] text-ink">
+              {entry.title}
+            </h1>
+
+            <p className="mx-auto mt-4 max-w-[26rem] font-display text-[1.15rem] italic leading-relaxed text-ink-soft">
+              {entry.message
+                ? `“${entry.message}”`
+                : "Someone composed this for you. It has been waiting here, unopened, ever since."}
+            </p>
+
+            <div className="mt-6 flex items-center justify-center gap-2" aria-hidden>
+              {species.map((spec, i) => (
+                <span
+                  key={`${spec!.slug}-${i}`}
+                  className="h-2 w-2 rounded-full ring-1 ring-[color-mix(in_oklab,var(--gold)_50%,transparent)]"
+                  style={{
+                    background: `linear-gradient(140deg, ${spec!.colours.petal[0]}, ${spec!.colours.petal[1]})`,
+                  }}
+                />
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setOpened(true)}
+              className="btn btn-primary group mt-8 w-full"
+            >
+              <span className="transition-transform duration-500 group-hover:rotate-6">✦</span>
+              Break the seal
+            </button>
+
+            <p className="mt-5 font-sans text-[0.55rem] uppercase tracking-[0.3em] text-ink-soft">
+              {entry.creator ? `From ${entry.creator}` : "No signature"}
+              {entry.views > 0 ? ` · opened ${entry.views} ${entry.views === 1 ? "time" : "times"}` : ""}
+            </p>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setOpened(true)}
-            className="mt-8 w-full rounded-sm border border-current/25 py-3 font-mono text-[0.64rem] tracking-[0.28em] transition-colors hover:bg-current/5"
-          >
-            UNTIE THE RIBBON
-          </button>
-          <p className="mt-4 font-mono text-[0.55rem] tracking-[0.2em] opacity-30">
-            {entry.creator ? `FROM ${entry.creator.toUpperCase()}` : "NO SIGNATURE"}
-            {entry.views > 0 ? ` · OPENED ${entry.views} TIMES` : ""}
-          </p>
         </div>
       </motion.div>
 
@@ -110,18 +128,18 @@ export function GiftExperience({ entry }: { entry: GardenEntry }) {
       >
         <div className="mx-auto flex max-w-3xl flex-wrap items-end justify-between gap-4">
           <div>
-            <p className="font-serif text-xl leading-none tracking-tight">{entry.title}</p>
-            <p className="mt-2 font-mono text-[0.58rem] tracking-[0.2em] opacity-50">
-              {entry.species.length} SPECIES · {entry.density} STEMS · {entry.palette.toUpperCase()}
+            <p className="font-display text-2xl italic leading-none text-ink">{entry.title}</p>
+            <p className="mt-2 font-sans text-[0.55rem] uppercase tracking-[0.28em] text-ink-soft">
+              {entry.species.length} species · {entry.density} stems · {entry.palette}
             </p>
           </div>
           <div className="pointer-events-auto flex items-center gap-2">
             <AudioToggle />
             <a
               href="/studio"
-              className="rounded-full border border-current/20 px-3 py-1.5 font-mono text-[0.58rem] tracking-[0.22em] transition-colors hover:bg-current/5"
+              className="btn btn-ghost py-2"
             >
-              MAKE YOUR OWN
+              Make your own
             </a>
           </div>
         </div>

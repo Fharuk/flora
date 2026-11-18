@@ -83,7 +83,7 @@ export function AudioToggle({ className }: { className?: string }) {
           {[0, 1, 2].map((i) => (
             <span
               key={i}
-              className="w-[2px] animate-pulse rounded-full bg-current"
+              className="w-[2px] animate-pulse rounded-full bg-[var(--accent)]"
               style={{ height: 4 + i * 3, animationDelay: `${i * 140}ms` }}
             />
           ))}

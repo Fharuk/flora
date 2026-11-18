@@ -54,9 +54,9 @@ function Subject({ slug, theme }: { slug: string; theme: "light" | "dark" }) {
     geometry.head.computeBoundingSphere();
     const sphere = geometry.head.boundingSphere;
     const radius = Math.max(sphere?.radius ?? 1, 0.05);
-    const scale = THREE.MathUtils.clamp(0.72 / radius, 0.4, 1.1);
+    const scale = THREE.MathUtils.clamp(0.88 / radius, 0.42, 1.15);
     const centreY = (sphere?.center.y ?? 0) * scale;
-    return { scale, y: 0.44 - centreY };
+    return { scale, y: 0.3 - centreY };
   }, [geometry]);
 
   useFrame((state, delta) => {
@@ -95,23 +95,26 @@ export function Vitrine() {
   return (
     <section id="specimens" className="relative border-t border-line px-5 py-16 sm:px-8 sm:py-24">
       <div className="mx-auto w-full max-w-[92rem]">
-        <div className="flex flex-wrap items-end justify-between gap-6 border-b border-line pb-6">
+        <div className="flex flex-wrap items-end justify-between gap-6 pb-6">
+          <div className="w-full">
+            <div className="rule-gold mb-8" />
+          </div>
           <div>
-            <p className="label mb-4">04 — Exotic specimens</p>
+            <p className="eyebrow mb-4">04 — Exotic specimens</p>
             <h2 className="display max-w-2xl text-[clamp(2.2rem,4.6vw,3.8rem)]">
-              Ten that were never <span className="italic text-accent">meant</span> to be glass.
+              Ten that were never <span className="emphasis">meant</span> to be glass.
             </h2>
           </div>
           <p className="max-w-sm text-[0.88rem] leading-relaxed text-ink-soft">
-            Selected for silhouette, rarity and how they behave under refraction. Click an entry to
-            put it in the vitrine.
+            Selected for silhouette, rarity and how they behave under refraction. Choose an entry to
+            lift it into the vitrine.
           </p>
         </div>
 
         <div className="mt-8 grid grid-cols-12 gap-6 lg:gap-10">
           {/* index */}
           <div className="col-span-12 lg:col-span-5">
-            <ul className="divide-y divide-[var(--line)] border-y border-line">
+            <ul className="divide-y divide-[color-mix(in_oklab,var(--gold)_16%,var(--line))] border-y border-[color-mix(in_oklab,var(--gold)_30%,transparent)]">
               {specimens.map((s, i) => {
                 const isActive = s.slug === active;
                 return (
@@ -126,11 +129,11 @@ export function Vitrine() {
                         isActive ? "text-ink" : "text-ink-soft hover:text-ink"
                       )}
                     >
-                      <span className="font-mono text-[0.6rem] tracking-[0.18em] text-ink-soft">
+                      <span className="font-display text-[0.85rem] italic text-[var(--gold-ink)]">
                         {String(i + 1).padStart(2, "0")}
                       </span>
                       <span>
-                        <span className="block font-display text-[1.35rem] leading-tight">{s.name}</span>
+                        <span className="block font-display text-[1.45rem] leading-tight tracking-[-0.01em]">{s.name}</span>
                         <span className="mt-1 flex flex-wrap items-center gap-2">
                           <span className="font-mono text-[0.55rem] uppercase tracking-[0.14em] text-ink-soft">
                             {s.family} · {s.origin}
@@ -142,7 +145,9 @@ export function Vitrine() {
                         aria-hidden
                         className={cn(
                           "h-6 w-6 rounded-full border transition-all duration-500",
-                          isActive ? "border-ink bg-ink" : "border-line group-hover:border-[var(--line-strong)]"
+                          isActive
+                            ? "border-[var(--gold)] bg-[var(--gold)]"
+                            : "border-[color-mix(in_oklab,var(--gold)_40%,transparent)] group-hover:border-[var(--gold)]"
                         )}
                       >
                         <span
@@ -164,7 +169,7 @@ export function Vitrine() {
           <div className="col-span-12 lg:col-span-7">
             <div
               ref={hostRef}
-              className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-line sm:aspect-[16/11]"
+              className="relative aspect-[4/3] w-full overflow-hidden rounded-[1.4rem] border border-[color-mix(in_oklab,var(--gold)_45%,transparent)] shadow-[0_30px_80px_-50px_rgba(74,22,28,0.6),inset_0_0_0_1px_rgba(255,255,255,0.35)] sm:aspect-[16/11]"
               style={{
                 background:
                   "radial-gradient(120% 90% at 50% 12%, var(--case-top) 0%, var(--case-top) 34%, var(--case-bottom) 100%)",
@@ -202,15 +207,17 @@ export function Vitrine() {
               </AnimatePresence>
 
               <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4">
-                <span className="label label-strong">{specimen.latin}</span>
+                <span className="rounded-full bg-[var(--glass)] px-3 py-1 font-display text-[0.95rem] italic text-ink backdrop-blur">
+                  {specimen.latin}
+                </span>
                 <button
                   type="button"
                   onClick={() => addSpecies(specimen.slug)}
                   className={cn(
-                    "pointer-events-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-mono text-[0.55rem] uppercase tracking-[0.16em] transition-colors",
+                    "pointer-events-auto inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-sans text-[0.55rem] uppercase tracking-[0.2em] transition-colors",
                     inBouquet
-                      ? "border-accent/60 bg-accent/15 text-ink"
-                      : "border-line bg-paper/70 text-ink backdrop-blur hover:border-ink"
+                      ? "border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_14%,transparent)] text-ink backdrop-blur"
+                      : "border-[color-mix(in_oklab,var(--gold)_50%,transparent)] bg-[var(--glass)] text-ink backdrop-blur hover:border-[var(--gold)]"
                   )}
                 >
                   <Plus className="h-3 w-3" />

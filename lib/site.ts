@@ -27,9 +27,9 @@ function resolveSiteUrl(): string {
 export const synthSite = {
   name: "Flora-Synth",
   wordmark: "Flora-Synth",
-  tagline: "A botanical instrument",
+  tagline: "Bouquets that never wilt",
   description:
-    "Flora-Synth composes bouquets of ten rare specimens in glass and chrome. Every arrangement is generated in real time and encoded in the link — no account, no upload, no two ever alike.",
+    "A florist's counter for impossible bouquets. Ten rare specimens cut in glass and gold, composed in your browser and sealed into a link — no account, no upload, no two ever alike.",
   url: resolveSiteUrl(),
   /** Placeholder contact — replace with the real studio address before launch. */
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "studio@flora-synth.studio",

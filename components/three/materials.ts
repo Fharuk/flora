@@ -200,7 +200,7 @@ export function stemMaterial(): THREE.MeshPhysicalMaterial {
     normalMap: noiseNormalMap(),
     normalScale: new THREE.Vector2(0.35, 0.35),
     sheen: 0.4,
-    sheenColor: new THREE.Color("#dff0d8"),
+    sheenColor: new THREE.Color("#efe4c9"),
     envMapIntensity: 0.8,
   });
 }
@@ -226,16 +226,18 @@ export function coreMaterial(palette: Palette, theme: Theme): THREE.MeshPhysical
 export function vesselMaterial(palette: Palette, theme: Theme): THREE.MeshPhysicalMaterial {
   const isDark = theme === "dark";
   return new THREE.MeshPhysicalMaterial({
-    color: new THREE.Color(isDark ? "#ffffff" : "#f4fbff"),
+    // cool white on a warm scene is what made this read as ceramic rather than glass
+    color: new THREE.Color(isDark ? "#ffffff" : "#fff8f0"),
     metalness: 0,
     roughness: 0.022,
     transmission: 1,
-    thickness: 2.4,
+    thickness: 1.9,
     normalMap: noiseNormalMap(),
-    normalScale: new THREE.Vector2(0.06, 0.06),
+    normalScale: new THREE.Vector2(0.05, 0.05),
     ior: 1.5,
     attenuationColor: new THREE.Color(palette.glass),
-    attenuationDistance: isDark ? 2.0 : 3.6,
+    // a shorter absorption distance tints the glass so heavily it stops transmitting
+    attenuationDistance: isDark ? 3.2 : 6.4,
     clearcoat: 1,
     clearcoatRoughness: 0.02,
     dispersion: 1.1,

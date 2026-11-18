@@ -26,8 +26,17 @@ export function Header() {
   const hydrate = useSynth((s) => s.hydrate);
   const [open, setOpen] = useState(false);
 
+  const [scrolled, setScrolled] = useState(false);
+
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 24);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => hydrate(), [hydrate]);
 
@@ -86,40 +95,59 @@ export function Header() {
 
   return (
     <>
-      <header className="pointer-events-none fixed inset-x-0 top-0 z-50 flex items-start justify-between px-5 py-5 sm:px-8 sm:py-6">
+      <header
+        className={cn(
+          "pointer-events-none fixed inset-x-0 top-0 z-50 flex items-start justify-between px-5 py-5 transition-colors duration-500 sm:px-8 sm:py-6",
+          // over the hero the bar should float clear; once content scrolls beneath it,
+          // an unfrosted bar collides with the headings, so it takes on a paper veil
+          scrolled &&
+            "bg-[color-mix(in_oklab,var(--paper)_82%,transparent)] backdrop-blur-md sm:py-4"
+        )}
+      >
         <a
           href="#top"
-          className="pointer-events-auto flex items-center gap-2.5 mix-blend-difference"
+          className="pointer-events-auto group flex items-center gap-3"
           aria-label={`${synthSite.name} — home`}
         >
-          <span aria-hidden className="grid h-6 w-6 place-items-center rounded-full border border-current">
-            <span className="h-1.5 w-1.5 rounded-full bg-current" />
+          {/* the seal, reduced to its essence: a garnet bead inside a gold ring */}
+          <span
+            aria-hidden
+            className="relative grid h-7 w-7 place-items-center rounded-full border border-[color-mix(in_oklab,var(--gold)_60%,transparent)] bg-paper/40 backdrop-blur transition-colors group-hover:border-[var(--gold)]"
+          >
+            <span className="h-2 w-2 rounded-full bg-[var(--accent)] shadow-[0_0_10px_var(--accent)]" />
           </span>
-          <span className="text-[0.82rem] font-medium uppercase tracking-[0.24em] text-bone">
-            {synthSite.wordmark}
+          <span className="leading-none">
+            <span className="block font-title text-[0.95rem] tracking-[0.02em] text-ink">
+              {synthSite.wordmark}
+            </span>
+            <span className="mt-1 block font-sans text-[0.42rem] uppercase tracking-[0.42em] text-ink-soft">
+              Florist&nbsp;·&nbsp;Est.&nbsp;MMXXVI
+            </span>
           </span>
         </a>
 
         <div className="pointer-events-auto flex items-center gap-2">
-          <nav aria-label="Sections" className="hidden items-center gap-1 md:flex">
+          <nav aria-label="Sections" className="hidden items-center gap-0.5 md:flex">
             {synthSite.nav.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
-                className="rounded-full px-3.5 py-2 font-mono text-[0.65rem] uppercase tracking-[0.2em] text-ink/70 transition-colors hover:text-ink"
+                className="rounded-full px-3.5 py-2 font-sans text-[0.58rem] uppercase tracking-[0.24em] text-ink/65 transition-colors hover:text-[var(--gold-ink)]"
               >
                 {item.label}
               </a>
             ))}
           </nav>
 
+          <span aria-hidden className="mx-1 hidden h-4 w-px bg-[var(--line-strong)] md:block" />
+
           <button
             type="button"
             onClick={toggleTheme}
             aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-            className="grid h-9 w-9 place-items-center rounded-full border border-ink/25 text-ink/80 backdrop-blur transition-colors hover:border-ink/50 hover:text-ink"
+            className="grid h-9 w-9 place-items-center rounded-full border border-[color-mix(in_oklab,var(--gold)_45%,transparent)] text-ink/75 backdrop-blur transition-colors hover:border-[var(--gold)] hover:text-[var(--gold-ink)]"
           >
-            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            {theme === "dark" ? <Sun className="h-[0.9rem] w-[0.9rem]" /> : <Moon className="h-[0.9rem] w-[0.9rem]" />}
           </button>
 
           <button
@@ -129,9 +157,9 @@ export function Header() {
             aria-label="Open menu"
             aria-expanded={open}
             aria-haspopup="dialog"
-            className="grid h-9 w-9 place-items-center rounded-full border border-ink/25 text-ink/80 backdrop-blur transition-colors hover:border-ink/50 hover:text-ink"
+            className="grid h-9 w-9 place-items-center rounded-full border border-[color-mix(in_oklab,var(--gold)_45%,transparent)] text-ink/75 backdrop-blur transition-colors hover:border-[var(--gold)] hover:text-[var(--gold-ink)]"
           >
-            <Menu className="h-4 w-4" />
+            <Menu className="h-[0.9rem] w-[0.9rem]" />
           </button>
         </div>
       </header>
@@ -142,18 +170,23 @@ export function Header() {
           role="dialog"
           aria-modal="true"
           aria-label="Sections"
-          className="menu-veil fixed inset-0 z-[60] bg-veil/95 backdrop-blur-xl"
+          className="menu-veil velvet fixed inset-0 z-[60] bg-veil/97 backdrop-blur-xl"
         >
             <div className="flex h-full flex-col px-6 py-6 sm:px-10">
               <div className="flex items-center justify-between">
-                <span className="text-[0.82rem] font-medium uppercase tracking-[0.24em] text-bone">
-                  {synthSite.wordmark}
+                <span className="flex items-center gap-3">
+                  <span aria-hidden className="grid h-6 w-6 place-items-center rounded-full border border-[color-mix(in_oklab,var(--gold)_60%,transparent)]">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[var(--gold)]" />
+                  </span>
+                  <span className="font-title text-[0.95rem] tracking-[0.02em] text-bone">
+                    {synthSite.wordmark}
+                  </span>
                 </span>
                 <button
                   type="button"
                   onClick={close}
                   aria-label="Close menu"
-                  className="grid h-9 w-9 place-items-center rounded-full border border-bone/25 text-bone/80 transition-colors hover:border-bone/50 hover:text-bone"
+                  className="grid h-9 w-9 place-items-center rounded-full border border-[color-mix(in_oklab,var(--gold)_45%,transparent)] text-bone/80 transition-colors hover:border-[var(--gold)] hover:text-bone"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -171,9 +204,14 @@ export function Header() {
                       <a
                         href={item.href}
                         onClick={close}
-                        className="block border-b border-bone/10 py-5 font-display text-4xl text-bone transition-colors hover:text-bone/70 sm:text-5xl"
+                        className="group flex items-baseline justify-between border-b border-bone/10 py-5 transition-colors hover:border-[color-mix(in_oklab,var(--gold)_50%,transparent)]"
                       >
-                        {item.label}
+                        <span className="font-display text-4xl text-bone transition-colors group-hover:text-[var(--gold-soft)] sm:text-5xl">
+                          {item.label}
+                        </span>
+                        <span className="font-mono text-[0.55rem] tracking-[0.2em] text-bone/30">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
                       </a>
                     </motion.li>
                   ))}
@@ -189,15 +227,15 @@ export function Header() {
                       target="_blank"
                       rel="noreferrer noopener"
                       className={cn(
-                        "block font-mono text-[0.68rem] uppercase tracking-[0.2em] text-bone/50 transition-colors hover:text-bone"
+                        "block font-sans text-[0.6rem] uppercase tracking-[0.28em] text-bone/45 transition-colors hover:text-[var(--gold-soft)]"
                       )}
                     >
                       {s.label}
                     </a>
                   ))}
                 </div>
-                <p className="max-w-xs font-mono text-[0.62rem] uppercase leading-relaxed tracking-[0.18em] text-bone/30">
-                  Ten specimens · glass and chrome · generated in the browser
+                <p className="max-w-xs font-display text-base italic leading-relaxed text-bone/40">
+                  Ten specimens, cut in glass — composed for you in the browser.
                 </p>
               </div>
           </div>

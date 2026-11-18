@@ -114,9 +114,9 @@ export function Botany() {
       <div className="mx-auto w-full max-w-[92rem]">
         <div className="flex flex-wrap items-end justify-between gap-6 border-b border-line pb-6">
           <div>
-            <p className="label mb-4">02 — Algorithmic botany</p>
+            <p className="eyebrow mb-4">02 — Algorithmic botany</p>
             <h2 className="display max-w-2xl text-[clamp(2.2rem,4.6vw,3.8rem)]">
-              One geometry. Two <span className="italic text-accent">truths.</span>
+              One geometry. Two <span className="emphasis">truths.</span>
             </h2>
           </div>
           <p className="max-w-sm text-[0.88rem] leading-relaxed text-ink-soft">

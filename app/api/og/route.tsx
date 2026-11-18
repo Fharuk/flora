@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
 import { decodeBouquet, bouquetTitle } from "@/lib/bouquet";
@@ -10,7 +12,18 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 /** Share cards are generated from the same URL state as the scene. */
+/*
+ * satori only knows the fonts you hand it, so the card had been falling back to the
+ * generic sans while every other surface moved to Cormorant. Read the same bundled
+ * faces the page loads rather than fetching anything at request time.
+ */
+async function loadSerif(weight: 400 | 500 | 600) {
+  const dir = join(process.cwd(), "node_modules/@fontsource/cormorant-garamond/files");
+  return readFile(join(dir, `cormorant-garamond-latin-${weight}-normal.woff`));
+}
+
 export async function GET(request: Request) {
+  const [serif, serifItalic] = await Promise.all([loadSerif(500), loadSerif(400)]);
   const { searchParams } = new URL(request.url);
   const config = decodeBouquet(searchParams);
   const palette = palettes[config.palette];
@@ -28,27 +41,39 @@ export async function GET(request: Request) {
           height: "100%",
           display: "flex",
           padding: 64,
-          background: `radial-gradient(120% 120% at 78% 8%, ${palette.swatch[1]} 0%, ${palette.swatch[0]} 62%, #0f1417 100%)`,
-          color: "#14110f",
-          fontFamily: "sans-serif",
+          background: `radial-gradient(120% 120% at 78% 8%, ${palette.swatch[1]} 0%, ${palette.swatch[0]} 58%, #2a1215 100%)`,
+          color: "#2a1215",
+          fontFamily: "Cormorant",
         }}
       >
         <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: "100%" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <div style={{ width: 14, height: 14, borderRadius: 999, background: "#14110f" }} />
-            <div style={{ fontSize: 20, letterSpacing: 6, textTransform: "uppercase" }}>Flora-Synth</div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 30,
+                height: 30,
+                borderRadius: 999,
+                border: "1px solid #a9803f",
+              }}
+            >
+              <div style={{ width: 11, height: 11, borderRadius: 999, background: "#9e2b3e" }} />
+            </div>
+            <div style={{ fontSize: 19, letterSpacing: 7, textTransform: "uppercase" }}>Flora-Synth</div>
           </div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            <div style={{ fontSize: 92, lineHeight: 0.95, letterSpacing: -2, maxWidth: 820 }}>{title}</div>
-            <div style={{ fontSize: 26, opacity: 0.62, maxWidth: 720 }}>{names}</div>
+            <div style={{ fontSize: 108, lineHeight: 0.92, letterSpacing: -1, maxWidth: 860 }}>{title}</div>
+            <div style={{ fontSize: 30, opacity: 0.66, maxWidth: 760, fontStyle: "italic" }}>{names}</div>
           </div>
 
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              borderTop: "1px solid rgba(20,17,15,0.18)",
+              borderTop: "1px solid rgba(169,128,63,0.55)",
               paddingTop: 22,
               fontSize: 18,
               letterSpacing: 3,
@@ -64,6 +89,12 @@ export async function GET(request: Request) {
         </div>
       </div>
     ),
-    size
+    {
+      ...size,
+      fonts: [
+        { name: "Cormorant", data: serif, weight: 500, style: "normal" },
+        { name: "Cormorant", data: serifItalic, weight: 400, style: "italic" },
+      ],
+    }
   );
 }

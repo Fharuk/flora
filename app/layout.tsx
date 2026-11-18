@@ -1,5 +1,10 @@
 import type { Metadata, Viewport } from "next";
 
+import "@fontsource/cormorant-garamond/300.css";
+import "@fontsource/cormorant-garamond/400.css";
+import "@fontsource/cormorant-garamond/500.css";
+import "@fontsource/cormorant-garamond/400-italic.css";
+import "@fontsource/cormorant-garamond/500-italic.css";
 import "@fontsource/instrument-serif/400.css";
 import "@fontsource/instrument-serif/400-italic.css";
 import "@fontsource/schibsted-grotesk/400.css";
@@ -51,8 +56,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#f2efe9" },
-    { media: "(prefers-color-scheme: dark)", color: "#06080a" },
+    { media: "(prefers-color-scheme: light)", color: "#fbf4ec" },
+    { media: "(prefers-color-scheme: dark)", color: "#150a0d" },
   ],
   colorScheme: "light dark",
   width: "device-width",

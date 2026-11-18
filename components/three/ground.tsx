@@ -87,7 +87,7 @@ export function Ground({ theme, palette, animated }: { theme: Theme; palette: Pa
     causticMat.current.uniforms.uTime.value = animated ? state.clock.elapsedTime : 3.2;
   });
 
-  const floorColour = theme === "dark" ? "#080b0e" : "#c9ced1";
+  const floorColour = theme === "dark" ? "#150b0e" : "#b0807a";
 
 
   return (
@@ -127,7 +127,7 @@ export function Ground({ theme, palette, animated }: { theme: Theme; palette: Pa
         <shaderMaterial
           transparent
           depthWrite={false}
-          uniforms={{ uColor: { value: new THREE.Color(theme === "dark" ? "#000000" : "#5e676c") } }}
+          uniforms={{ uColor: { value: new THREE.Color(theme === "dark" ? "#000000" : "#7a5b50") } }}
           vertexShader={/* glsl */ `
             varying vec2 vUv;
             void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }
