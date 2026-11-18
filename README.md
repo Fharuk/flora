@@ -62,17 +62,21 @@ config.
 ```
 app/
   layout.tsx            fonts, theme boot, URL sync, metadata
-  page.tsx              the one page
+  page.tsx              homepage: hero → instrument → botany → lab → specimens → notes → garden
+  studio/page.tsx       the composer on its own route
+  gift/[code]/page.tsx  the unboxing, rendered from a saved composition
   globals.css           the whole design system (tokens → components)
   api/og/route.tsx      share cards generated from the bouquet params
+  api/garden/route.ts   GET the feed · POST a new composition
+  api/garden/[code]/    GET one · POST a view
 components/
-  synth/                UI: header, instrument, botany, vitrine, notes
+  synth/                UI: header, instrument, botany, lab, vitrine, notes, garden, studio, gift
   three/
     bouquet-scene.tsx   canvas, lighting, camera, motes, backdrop
     flowers/
-      geometry.ts       parametric petal + tapered tube + merge helpers
+      geometry.ts       parametric petal, tapered tube, merge + growth channels
       build.ts          species → geometry (one merged mesh per species head)
-    materials.ts        physical material recipes (glass / chrome / porcelain / iridescent)
+    materials.ts        physical material recipes + the growth shader injection
     materials/textures.ts  procedural normal + roughness maps
     studio-environment.tsx a photo studio baked into a PMREM env map at runtime
     vessel.tsx          lathed vessel profiles + water line
@@ -80,11 +84,55 @@ components/
     effects.tsx         tone map → bloom → DOF → aberration → vignette → grain
     lib/                shared GLSL, capability hooks
 lib/
-  specimens.ts          TEN SPECIES — the botanical data
+  specimens.ts          TEN SPECIES — the botanical data and rarity tiers
+  hybrids.ts            the breeding engine + the one specimen resolver
   bouquet.ts            RNG, encode/decode, composition, naming
+  audio.ts              generative score (Web Audio, no files)
+  print.ts              bouquet → binary STL
+  db.ts                 server-only Supabase client, tables, throttles
+  garden.ts             the garden's public contract + submission validation
   store.ts              zustand: config + theme, URL mirroring
 skills/                 840 vendored agent skills (see skills/README.md)
 ```
+
+### The garden, and what it costs
+
+Saving a composition writes one row. Reading it renders the same flower, because the row
+stores the bouquet's URL config rather than a picture of it.
+
+- All database access is **server-side**, in route handlers, using the service key. The
+  browser never receives a credential, so row-level security stays fully closed — there is
+  no anon key in the bundle at all.
+- The feed is polled every 20 s rather than subscribed. Realtime would require shipping a
+  key to every visitor to watch a list of two dozen rows.
+- Submissions are re-decoded and re-encoded on the server, so a stored config is guaranteed
+  to resolve to renderable species.
+- **With no database configured the app still runs**: the garden shows a quiet empty state,
+  and every bouquet remains shareable as a URL. `lib/db.ts` returns `null` rather than
+  throwing.
+
+Two environment variables, both optional locally:
+
+```
+NEXT_PUBLIC_SUPABASE_URL=https://<project>.supabase.co
+SUPABASE_SERVICE_KEY=<service role key>   # server only, never exposed
+```
+
+Schema lives in the `flora_*` tables, namespaced so the project can host other products:
+
+```sql
+flora_bouquets (code, config, title, species[], palette, arrangement, vessel,
+                density, bloom, seed, creator, message, views, created_at)
+```
+
+### Living growth
+
+Every petal is tagged with a pivot, a hinge axis, a total opening angle and a delay
+(`tagGrowth` in `flowers/geometry.ts`). `materials.ts` injects a vertex-shader rotation
+into the stock physical material through three's `#include` hooks, so transmission,
+iridescence and sheen all keep working. The rotation is rigid about the petal's own base,
+so the normal is rotated by the same matrix and the lighting stays correct as the flower
+opens. A whole bouquet unfurls for four floats a vertex and no per-frame CPU work.
 
 ### The rendering pipeline
 
