@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "motion"],
   },
+  // The OG route reads the serif faces off disk at request time; without this Next has no
+  // reason to believe a .woff belongs in that function's bundle.
+  outputFileTracingIncludes: {
+    "/api/og": ["./assets/fonts/**"],
+  },
   async headers() {
     return [
       {

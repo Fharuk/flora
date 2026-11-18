@@ -14,16 +14,23 @@ export const contentType = "image/png";
 /** Share cards are generated from the same URL state as the scene. */
 /*
  * satori only knows the fonts you hand it, so the card had been falling back to the
- * generic sans while every other surface moved to Cormorant. Read the same bundled
- * faces the page loads rather than fetching anything at request time.
+ * generic sans while every other surface moved to Cormorant.
+ *
+ * The faces are vendored into assets/fonts rather than read out of node_modules: a
+ * node_modules path is not traced into the serverless bundle, and the first attempt at
+ * this returned a 500 in production while working perfectly locally.
  */
-async function loadSerif(weight: 400 | 500 | 600) {
-  const dir = join(process.cwd(), "node_modules/@fontsource/cormorant-garamond/files");
-  return readFile(join(dir, `cormorant-garamond-latin-${weight}-normal.woff`));
+const FONT_DIR = join(process.cwd(), "assets", "fonts");
+
+async function loadSerif(file: string) {
+  return readFile(join(FONT_DIR, file));
 }
 
 export async function GET(request: Request) {
-  const [serif, serifItalic] = await Promise.all([loadSerif(500), loadSerif(400)]);
+  const [serif, serifItalic] = await Promise.all([
+    loadSerif("og-serif.woff"),
+    loadSerif("og-serif-italic.woff"),
+  ]);
   const { searchParams } = new URL(request.url);
   const config = decodeBouquet(searchParams);
   const palette = palettes[config.palette];
