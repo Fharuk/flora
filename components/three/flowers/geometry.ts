@@ -180,13 +180,93 @@ export function bractGeometry(length: number, width: number, curve = 0.4): THREE
   });
 }
 
+/**
+ * Growth channels, carried as vertex attributes.
+ *
+ * Every petal knows its own attachment point, hinge axis, total opening angle and place in
+ * the queue. The shader turns those four numbers into a rotation, so a whole bouquet can
+ * unfurl petal by petal for the cost of four floats a vertex and no per-frame work on the
+ * CPU. See `growChunk` in materials.ts for the consumer.
+ */
+export const GROWTH_ATTRIBUTES = ["aGrowPivot", "aGrowAxis", "aGrowAngle", "aGrowDelay"] as const;
+
+const _growPivot = new THREE.Vector3();
+
+/**
+ * Re-bind growth channels after a geometry has been moved.
+ *
+ * `BufferGeometry.applyMatrix4` only rewrites position/normal/tangent, so a petal that was
+ * tagged and then translated would keep opening around its old hinge. Spray and spike forms
+ * are built exactly that way, so this runs on every placement.
+ */
+export function retargetGrowth(geo: THREE.BufferGeometry, matrix: THREE.Matrix4): THREE.BufferGeometry {
+  const pivot = geo.getAttribute("aGrowPivot") as THREE.BufferAttribute | undefined;
+  const axis = geo.getAttribute("aGrowAxis") as THREE.BufferAttribute | undefined;
+  if (!pivot || !axis) return geo;
+  const quat = new THREE.Quaternion().setFromRotationMatrix(matrix);
+  const v = new THREE.Vector3();
+  const d = new THREE.Vector3();
+  for (let i = 0; i < pivot.count; i++) {
+    v.fromBufferAttribute(pivot, i).applyMatrix4(matrix);
+    pivot.setXYZ(i, v.x, v.y, v.z);
+    d.fromBufferAttribute(axis, i).applyQuaternion(quat).normalize();
+    axis.setXYZ(i, d.x, d.y, d.z);
+  }
+  pivot.needsUpdate = true;
+  axis.needsUpdate = true;
+  return geo;
+}
+
+/** Attach the growth recipe for one petal to its geometry (constant across its vertices). */
+export function tagGrowth(
+  geo: THREE.BufferGeometry,
+  pivot: THREE.Vector3,
+  axis: THREE.Vector3,
+  angle: number,
+  delay: number
+): THREE.BufferGeometry {
+  const count = geo.getAttribute("position").count;
+  const pivots = new Float32Array(count * 3);
+  const axes = new Float32Array(count * 3);
+  const angles = new Float32Array(count);
+  const delays = new Float32Array(count);
+  _growPivot.copy(pivot);
+  for (let i = 0; i < count; i++) {
+    pivots[i * 3] = _growPivot.x;
+    pivots[i * 3 + 1] = _growPivot.y;
+    pivots[i * 3 + 2] = _growPivot.z;
+    axes[i * 3] = axis.x;
+    axes[i * 3 + 1] = axis.y;
+    axes[i * 3 + 2] = axis.z;
+    angles[i] = angle;
+    delays[i] = delay;
+  }
+  geo.setAttribute("aGrowPivot", new THREE.Float32BufferAttribute(pivots, 3));
+  geo.setAttribute("aGrowAxis", new THREE.Float32BufferAttribute(axes, 3));
+  geo.setAttribute("aGrowAngle", new THREE.Float32BufferAttribute(angles, 1));
+  geo.setAttribute("aGrowDelay", new THREE.Float32BufferAttribute(delays, 1));
+  return geo;
+}
+
 /** Merge + free the inputs. Falls back to the first geometry if attributes disagree. */
-export function mergeAll(geos: THREE.BufferGeometry[]): THREE.BufferGeometry {
+export function mergeAll(geos: THREE.BufferGeometry[], keep: readonly string[] = []): THREE.BufferGeometry {
   const cleaned = geos.map((g) => {
     const copy = g.index ? g.toNonIndexed() : g;
     // every merge participant must expose the same attribute set
     for (const key of Object.keys(copy.attributes)) {
-      if (!["position", "normal", "uv"].includes(key)) copy.deleteAttribute(key);
+      if (!["position", "normal", "uv", ...keep].includes(key)) copy.deleteAttribute(key);
+    }
+    // a participant that skipped tagGrowth would break mergeGeometries — fill it with a
+    // no-op recipe so the merge stays uniform
+    for (const key of keep) {
+      if (!copy.getAttribute(key)) {
+        const count = copy.getAttribute("position").count;
+        const isVec = key === "aGrowPivot" || key === "aGrowAxis";
+        // an all-zero axis would normalise to NaN and take the whole petal with it
+        const fill = new Float32Array(count * (isVec ? 3 : 1));
+        if (key === "aGrowAxis") for (let i = 0; i < count; i++) fill[i * 3 + 1] = 1;
+        copy.setAttribute(key, new THREE.Float32BufferAttribute(fill, isVec ? 3 : 1));
+      }
     }
     if (!copy.getAttribute("uv")) {
       copy.setAttribute("uv", new THREE.Float32BufferAttribute(new Float32Array(copy.getAttribute("position").count * 2), 2));

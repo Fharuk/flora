@@ -7,13 +7,96 @@ import { noiseNormalMap, noiseRoughnessMap } from "./materials/textures";
 export type Theme = "light" | "dark";
 
 /**
+ * The unfurling.
+ *
+ * Each petal carries a pivot, a hinge axis, a total opening angle and a delay. At growth 0
+ * every petal is folded shut around its pivot; at growth 1 the rotation is zero and the
+ * flower sits in the pose the geometry was authored in. Because this is a rigid rotation of
+ * the petal about its own base, the same matrix can rotate the normal — so the lighting
+ * stays correct as the flower opens instead of flattening the way a uniform scale would.
+ */
+const GROWTH_PARS = /* glsl */ `
+  attribute vec3 aGrowPivot;
+  attribute vec3 aGrowAxis;
+  attribute float aGrowAngle;
+  attribute float aGrowDelay;
+  uniform float uGrowth;
+  uniform float uGrowthScale;
+
+  mat3 growRotation(float ang, vec3 axis) {
+    vec3 ax = normalize(axis);
+    float c = cos(ang), s = sin(ang), t = 1.0 - c;
+    return mat3(
+      c + ax.x * ax.x * t,        ax.y * ax.x * t + ax.z * s,  ax.z * ax.x * t - ax.y * s,
+      ax.x * ax.y * t - ax.z * s, c + ax.y * ax.y * t,         ax.z * ax.y * t + ax.x * s,
+      ax.x * ax.z * t + ax.y * s, ax.y * ax.z * t - ax.x * s,  c + ax.z * ax.z * t
+    );
+  }
+`;
+
+const GROWTH_PROGRESS = /* glsl */ `
+  float growProgress() {
+    float window = 1.0 - aGrowDelay * 0.55;
+    float local = clamp((uGrowth - aGrowDelay * 0.55) / max(window, 0.001), 0.0, 1.0);
+    return local * local * (3.0 - 2.0 * local);
+  }
+`;
+
+/**
+ * Injects the growth shader into a stock physical material. `#include` hooks are stable
+ * across three releases, unlike rewriting the whole shader, so the transmission, iridescence
+ * and sheen paths keep working untouched.
+ */
+function attachGrowth(material: THREE.MeshPhysicalMaterial, initial = 1) {
+  const state = { value: initial };
+  material.userData.growth = state;
+  material.onBeforeCompile = (shader) => {
+    shader.uniforms.uGrowth = state;
+    shader.uniforms.uGrowthScale = { value: 1 };
+    shader.vertexShader = shader.vertexShader
+      .replace("#include <common>", `#include <common>\n${GROWTH_PARS}\n${GROWTH_PROGRESS}`)
+      .replace(
+        "#include <beginnormal_vertex>",
+        `#include <beginnormal_vertex>
+         float growE = growProgress();
+         mat3 growM = growRotation(-aGrowAngle * (1.0 - growE), aGrowAxis);
+         objectNormal = growM * objectNormal;`
+      )
+      .replace(
+        "#include <begin_vertex>",
+        `#include <begin_vertex>
+         float growS = mix(uGrowthScale, 1.0, growE);
+         transformed = aGrowPivot + growM * ((transformed - aGrowPivot) * growS);`
+      );
+  };
+  // a different shader program per material, but the same cache key for all of them
+  material.customProgramCacheKey = () => "flora-growth-v1";
+  return material;
+}
+
+/** Drive one material's unfurl. Called from the frame loop, never per stem per frame. */
+export function setGrowth(material: THREE.Material | null | undefined, value: number) {
+  const state = material?.userData?.growth as { value: number } | undefined;
+  if (state) state.value = value;
+}
+
+/**
  * Physical material recipes.
  *
  * Glass here is not a look — it is transmission with real thickness, dispersion and
  * attenuation. That is why the specimens read as crystal from every angle instead of as
  * a transparent PNG: the refraction is sampled from the actual scene behind each petal.
  */
-export function flowerMaterial(spec: Specimen, palette: Palette, theme: Theme): THREE.MeshPhysicalMaterial {
+export function flowerMaterial(
+  spec: Specimen,
+  palette: Palette,
+  theme: Theme,
+  growth = 1
+): THREE.MeshPhysicalMaterial {
+  return attachGrowth(buildFlowerMaterial(spec, palette, theme), growth);
+}
+
+function buildFlowerMaterial(spec: Specimen, palette: Palette, theme: Theme): THREE.MeshPhysicalMaterial {
   const tint = new THREE.Color(palette.glass);
   const isDark = theme === "dark";
 

@@ -10,7 +10,8 @@ import { buildDisplayStem, buildFlower, speciesBloom } from "@/components/three/
 import { StudioEnvironment } from "@/components/three/studio-environment";
 import { flowerMaterial } from "@/components/three/materials";
 import { useDocumentVisible, useInView, useReducedMotion, useWebGLSupport } from "@/components/three/lib/use-capabilities";
-import { palettes, specimens, specimenBySlug } from "@/lib/specimens";
+import { getSpecimen } from "@/lib/hybrids";
+import { palettes, specimens } from "@/lib/specimens";
 import { useSynth } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +24,7 @@ import { cn } from "@/lib/utils";
  */
 
 function Subject({ slug, theme }: { slug: string; theme: "light" | "dark" }) {
-  const spec = specimenBySlug.get(slug)!;
+  const spec = getSpecimen(slug)!;
   // the case tints the glass with the species' own pigment — on a neutral frost tint every
   // specimen read as the same white flower once it was inside the vitrine
   const palette = useMemo(
@@ -87,7 +88,7 @@ export function Vitrine() {
   const hasWebGL = useWebGLSupport();
   const visible = useDocumentVisible();
 
-  const specimen = specimenBySlug.get(active) ?? specimens[0];
+  const specimen = getSpecimen(active) ?? specimens[0];
   const inBouquet = config.species.includes(specimen.slug);
 
   return (

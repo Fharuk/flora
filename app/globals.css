@@ -292,3 +292,20 @@
     user-select: none;
   }
 }
+
+/* ── the garden marquee ────────────────────────────────────────────────────
+   The track is doubled in the DOM, so translating exactly half its own width
+   returns to a pixel-identical frame — the seam never lands on a card edge. */
+@keyframes garden-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to   { transform: translate3d(-50%, 0, 0); }
+}
+
+.garden-track {
+  animation: garden-drift 68s linear infinite;
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .garden-track { animation: none; }
+}

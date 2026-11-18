@@ -7,6 +7,53 @@
 export type Form = "spiral" | "cup" | "spray" | "spike" | "spathe" | "fan";
 export type Finish = "glass" | "chrome" | "porcelain" | "iridescent";
 
+export type Rarity = "common" | "rare" | "exotic" | "legendary" | "mythic";
+
+/** Collectibility tier, shown alongside the botanical record rather than instead of it. */
+export const RARITY_ORDER: Rarity[] = ["common", "rare", "exotic", "legendary", "mythic"];
+
+export const rarityBySlug: Record<string, Rarity> = {
+  "ghost-orchid": "legendary",
+  "titan-arum": "legendary",
+  "king-protea": "exotic",
+  "cafe-au-lait-dahlia": "exotic",
+  "gloriosa-lily": "rare",
+  "bird-of-paradise": "rare",
+  "velvet-anthurium": "rare",
+  "cymbidium-orchid": "common",
+  "persian-ranunculus": "common",
+  "black-hellebore": "common",
+};
+
+export const rarityLabel: Record<Rarity, string> = {
+  common: "Common",
+  rare: "Rare",
+  exotic: "Exotic",
+  legendary: "Legendary",
+  mythic: "Mythic",
+};
+
+/**
+ * Two-letter species codes live here rather than in the URL codec, so the hybrid engine can
+ * build a resolvable slug without importing the codec module back.
+ */
+export const SPECIES_CODE: Record<string, string> = {
+  "ghost-orchid": "gh",
+  "king-protea": "kp",
+  "gloriosa-lily": "gl",
+  "bird-of-paradise": "bp",
+  "black-hellebore": "bh",
+  "cymbidium-orchid": "cy",
+  "cafe-au-lait-dahlia": "da",
+  "titan-arum": "ta",
+  "persian-ranunculus": "ra",
+  "velvet-anthurium": "va",
+};
+
+export const CODE_SPECIES: Record<string, string> = Object.fromEntries(
+  Object.entries(SPECIES_CODE).map(([slug, code]) => [code, slug])
+);
+
 export type Specimen = {
   slug: string;
   name: string;
@@ -216,6 +263,11 @@ export const specimens: Specimen[] = [
 
 export const specimenBySlug = new Map(specimens.map((s) => [s.slug, s]));
 export const specimenSlugs = specimens.map((s) => s.slug);
+
+/** Botanical record for a base species; hybrids are resolved by `@/lib/hybrids`. */
+export function specimenRarity(slug: string): Rarity {
+  return rarityBySlug[slug] ?? "common";
+}
 
 export type PaletteKey = "frost" | "chrome" | "amber" | "noir";
 

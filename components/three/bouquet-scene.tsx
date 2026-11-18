@@ -6,13 +6,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 import { composeBouquet, vesselProfile, type BouquetConfig } from "@/lib/bouquet";
-import { palettes, specimenBySlug, type Palette } from "@/lib/specimens";
+import { getSpecimen } from "@/lib/hybrids";
+import { palettes, type Palette } from "@/lib/specimens";
 
 import { Effects } from "./effects";
 import { buildFlower, buildStem, speciesBloom } from "./flowers/build";
 import { Ground } from "./ground";
 import { StudioEnvironment } from "./studio-environment";
-import { coreMaterial, flowerMaterial, stemMaterial, type Theme } from "./materials";
+import { coreMaterial, flowerMaterial, setGrowth, stemMaterial, type Theme } from "./materials";
 import { Vessel } from "./vessel";
 import { useDocumentVisible, useReducedMotion, useWebGLSupport } from "./lib/use-capabilities";
 
@@ -172,7 +173,7 @@ function StemInstance({
   bloom: number;
   reveal: React.RefObject<number>;
 }) {
-  const spec = specimenBySlug.get(stem.species);
+  const spec = getSpecimen(stem.species);
   const group = useRef<THREE.Group>(null);
 
   const built = useMemo(() => {
@@ -190,8 +191,9 @@ function StemInstance({
     return THREE.MathUtils.clamp(byWeight, 0.42, 0.9);
   }, [spec]);
 
+  // starts shut; the frame loop opens it once the stem has cleared the vessel
   const headMaterial = useMemo(
-    () => (spec ? flowerMaterial(spec, palette, theme) : null),
+    () => (spec ? flowerMaterial(spec, palette, theme, 0) : null),
     [spec, palette, theme]
   );
   const coreMat = useMemo(() => coreMaterial(palette, theme), [palette, theme]);
@@ -219,6 +221,10 @@ function StemInstance({
     // grow up out of the vessel from below, never above it
     group.current.position.y = -(1 - eased) * 0.9;
     group.current.scale.setScalar(0.42 + eased * 0.58);
+
+    // petals lag the stem, so the flower arrives closed and then opens — the unfurl
+    // reads as growth rather than as a scale-up
+    setGrowth(headMaterial, Math.min(1, Math.max(0, (eased - 0.55) / 0.45)));
   });
 
   if (!built || !headMaterial) return null;
@@ -302,7 +308,7 @@ function Scene({
       <group scale={1} position={[0, 0, 0]}>
         <Vessel vessel={config.vessel} palette={palette} theme={theme} />
         {stems.map((stem) => {
-          const spec = specimenBySlug.get(stem.species);
+          const spec = getSpecimen(stem.species);
           const bloom = spec ? speciesBloom(spec, config.bloom) : config.bloom;
           return (
             <StemInstance

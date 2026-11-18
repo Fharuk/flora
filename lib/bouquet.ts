@@ -7,11 +7,13 @@
  * the same species, which is how "generate" stays interesting without an account.
  */
 
+import { getSpecimen } from "./hybrids";
 import {
+  CODE_SPECIES,
+  SPECIES_CODE,
   arrangements,
   paletteKeys,
   specimens,
-  specimenBySlug,
   type Arrangement,
   type PaletteKey,
   type Vessel,
@@ -46,20 +48,6 @@ export type Stem = {
   bow: number;
 };
 
-export const SPECIES_CODE: Record<string, string> = {
-  "ghost-orchid": "gh",
-  "king-protea": "kp",
-  "gloriosa-lily": "gl",
-  "bird-of-paradise": "bp",
-  "black-hellebore": "bh",
-  "cymbidium-orchid": "cy",
-  "cafe-au-lait-dahlia": "da",
-  "titan-arum": "ta",
-  "persian-ranunculus": "ra",
-  "velvet-anthurium": "va",
-};
-
-const CODE_SPECIES = Object.fromEntries(Object.entries(SPECIES_CODE).map(([k, v]) => [v, k]));
 
 export const DEFAULT_CONFIG: BouquetConfig = {
   seed: 20831,
@@ -125,7 +113,7 @@ export function decodeBouquet(input: string | URLSearchParams): BouquetConfig {
   const species = (params.get("f") ?? "")
     .split("-")
     .map((code) => CODE_SPECIES[code] ?? code)
-    .filter((slug) => specimenBySlug.has(slug))
+    .filter((slug) => Boolean(getSpecimen(slug)))
     .slice(0, 5);
   if (!species.length) species.push(...DEFAULT_CONFIG.species);
 
@@ -157,7 +145,7 @@ export function composeBouquet(config: BouquetConfig): Stem[] {
   // weights make larger specimens appear less often, so the bouquet keeps a hierarchy
   const weighted: string[] = [];
   for (const slug of chosen) {
-    const spec = specimenBySlug.get(slug);
+    const spec = getSpecimen(slug);
     if (!spec) continue;
     const copies = Math.max(1, Math.round(4 / spec.weight));
     for (let i = 0; i < copies; i++) weighted.push(slug);
@@ -168,7 +156,7 @@ export function composeBouquet(config: BouquetConfig): Stem[] {
 
   for (let i = 0; i < count; i++) {
     const species = weighted[Math.floor(rand() * weighted.length)] ?? chosen[0];
-    const spec = specimenBySlug.get(species)!;
+    const spec = getSpecimen(species)!;
     const t = count === 1 ? 0 : i / (count - 1);
 
     let azimuth = 0;

@@ -39,7 +39,8 @@ export const synthSite = {
     { label: "Instrument", href: "#instrument" },
     { label: "Botany", href: "#botany" },
     { label: "Specimens", href: "#specimens" },
-    { label: "Notes", href: "#notes" },
+    { label: "Garden", href: "#garden" },
+    { label: "Studio", href: "/studio" },
   ],
   socials: [
     { label: "Instagram", href: "https://instagram.com" },

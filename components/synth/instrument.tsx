@@ -5,13 +5,13 @@ import { ArrowDown, Check, Copy, Dices, RotateCcw, Sparkles } from "lucide-react
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BouquetCanvas } from "@/components/three/bouquet-scene";
+import { getSpecimen } from "@/lib/hybrids";
 import { useBouquetMeta, useShareUrl, useSynth } from "@/lib/store";
 import {
   arrangements,
   paletteKeys,
   palettes,
   specimens,
-  specimenBySlug,
   vessels,
 } from "@/lib/specimens";
 import { cn } from "@/lib/utils";
@@ -167,13 +167,13 @@ export function InstrumentControls() {
       e.preventDefault();
       setDropActive(false);
       const slug = e.dataTransfer.getData("text/flora-specimen");
-      if (slug && specimenBySlug.has(slug)) addSpecies(slug);
+      if (slug && getSpecimen(slug)) addSpecies(slug);
     },
     [addSpecies]
   );
 
   const chosen = useMemo(
-    () => config.species.map((s) => specimenBySlug.get(s)).filter(Boolean),
+    () => config.species.map((s) => getSpecimen(s)).filter(Boolean),
     [config.species]
   );
 

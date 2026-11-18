@@ -2,7 +2,7 @@
   "name": "flora-synth",
   "version": "0.1.0",
   "private": true,
-  "description": "Flora-Synth \u2014 a botanical instrument. Ten rare specimens rendered as glass and chrome, composed in real time and encoded in the URL.",
+  "description": "Flora-Synth — a botanical instrument. Ten rare specimens rendered as glass and chrome, composed in real time and encoded in the URL.",
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
@@ -18,6 +18,7 @@
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "9.8.2",
     "@react-three/postprocessing": "^3.2.2",
+    "@supabase/supabase-js": "^2.119.0",
     "clsx": "2.1.1",
     "lucide-react": "1.63.0",
     "motion": "14.7.1",

@@ -8,7 +8,8 @@ import { buildDisplayStem, buildFlower, speciesBloom } from "@/components/three/
 import { StudioEnvironment } from "@/components/three/studio-environment";
 import { flowerMaterial } from "@/components/three/materials";
 import { useDocumentVisible, useInView, useReducedMotion, useWebGLSupport } from "@/components/three/lib/use-capabilities";
-import { palettes, specimenBySlug } from "@/lib/specimens";
+import { getSpecimen } from "@/lib/hybrids";
+import { palettes } from "@/lib/specimens";
 import { useSynth } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -21,7 +22,7 @@ import { cn } from "@/lib/utils";
  */
 
 function SplitFlower({ slug, split, theme }: { slug: string; split: number; theme: "light" | "dark" }) {
-  const spec = specimenBySlug.get(slug)!;
+  const spec = getSpecimen(slug)!;
   const palette = palettes.frost;
   const reduced = useReducedMotion();
   const group = useRef<THREE.Group>(null);
@@ -99,7 +100,7 @@ export function Botany() {
   const visible = useDocumentVisible();
   const dragging = useRef(false);
 
-  const specimen = specimenBySlug.get(config.species[0]) ?? specimenBySlug.get("ghost-orchid")!;
+  const specimen = getSpecimen(config.species[0]) ?? getSpecimen("ghost-orchid")!;
 
   const onPointer = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!dragging.current) return;

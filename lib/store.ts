@@ -28,6 +28,7 @@ type SynthState = {
   toggleTheme: () => void;
 
   generate: () => void;
+  applyConfig: (config: BouquetConfig) => void;
   setSeed: (seed: number) => void;
   setPalette: (p: PaletteKey) => void;
   setArrangement: (a: Arrangement) => void;
@@ -62,6 +63,8 @@ export const useSynth = create<SynthState>((set, get) => ({
 
   setTheme: (theme) => set({ theme }),
   toggleTheme: () => set({ theme: get().theme === "dark" ? "light" : "dark" }),
+
+  applyConfig: (config) => set((s) => ({ config, generation: s.generation + 1 })),
 
   generate: () =>
     set((s) => ({

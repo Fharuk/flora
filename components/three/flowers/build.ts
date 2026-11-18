@@ -3,7 +3,16 @@ import * as THREE from "three";
 import type { Specimen } from "@/lib/specimens";
 import type { Stem } from "@/lib/bouquet";
 
-import { mergeAll, paintFlat, paintGradient, petalGeometry, taperedTube } from "./geometry";
+import {
+  GROWTH_ATTRIBUTES,
+  mergeAll,
+  retargetGrowth,
+  paintFlat,
+  paintGradient,
+  petalGeometry,
+  tagGrowth,
+  taperedTube,
+} from "./geometry";
 
 /**
  * Species → geometry.
@@ -31,6 +40,16 @@ function place(geo: THREE.BufferGeometry, position: THREE.Vector3, rotation: THR
   tmpQuat.setFromEuler(rotation);
   tmpMatrix.compose(position, tmpQuat, new THREE.Vector3(scale, scale, scale));
   const out = geo.clone().applyMatrix4(tmpMatrix);
+  retargetGrowth(out, tmpMatrix);
+  geo.dispose();
+  return out;
+}
+
+/** Uniform scale that carries the growth pivot with it. */
+function shrink(geo: THREE.BufferGeometry, s: number) {
+  const m = new THREE.Matrix4().makeScale(s, s, s);
+  const out = geo.clone().applyMatrix4(m);
+  retargetGrowth(out, m);
   geo.dispose();
   return out;
 }
@@ -80,11 +99,17 @@ function petalRings(
         Math.sin(angle) * 0.02 * scale
       );
 
-      parts.push(place(geo, pos, rot, 1));
+      const placed = place(geo, pos, rot, 1);
+      // The hinge runs tangentially across the ring, so rotating about it swings the petal
+      // outward from the bud. Outer whorls open first; inner ones chase them.
+      const axis = new THREE.Vector3(-Math.sin(angle), 0, Math.cos(angle));
+      const opening = 0.55 + outward * 1.25;
+      const delay = (1 - lt) * 0.42 + (i / perLayer) * 0.22;
+      parts.push(tagGrowth(placed, pos, axis, opening, Math.min(1, delay)));
     }
   }
 
-  return mergeAll(parts);
+  return mergeAll(parts, GROWTH_ATTRIBUTES);
 }
 
 /** Dense stamens / spadix — thin spikes clustered at the centre. */
@@ -184,8 +209,7 @@ export function buildFlower(spec: Specimen, bloom: number): FlowerGeometry {
         const offset = new THREE.Vector3(Math.cos(a) * spread, y, Math.sin(a) * spread);
         const small = 0.72 + t * 0.18;
         const ring = petalRings(spec, bloom, { shape: "pointed", tilt: 0.52, layerScale: 0.74 });
-        const scaled = ring.clone().scale(small, small, small);
-        ring.dispose();
+        const scaled = shrink(ring, small);
         // tilt each head outward along its own branch
         headParts.push(place(scaled, offset, new THREE.Euler(0.5, a, 0.1)));
         coreParts.push(
@@ -209,8 +233,7 @@ export function buildFlower(spec: Specimen, bloom: number): FlowerGeometry {
         const a = b * 2.1 + 0.4;
         const ring = petalRings(spec, bloom, { shape: "pointed", tilt: 1.05, layerScale: 0.85 });
         const s = 0.5 + t * 0.15;
-        const scaled = ring.clone().scale(s, s, s);
-        ring.dispose();
+        const scaled = shrink(ring, s);
         headParts.push(place(scaled, new THREE.Vector3(Math.cos(a) * 0.06, y, Math.sin(a) * 0.06), new THREE.Euler(0.35, a, 0.2)));
         coreParts.push(place(stamenCluster(9, 0.07, 0.16, bloom), new THREE.Vector3(Math.cos(a) * 0.06, y, Math.sin(a) * 0.06), new THREE.Euler(0, a, 0)));
         headHeight = Math.max(headHeight, y);
@@ -231,7 +254,15 @@ export function buildFlower(spec: Specimen, bloom: number): FlowerGeometry {
         open: bloom,
       });
       // stand the spathe up and fold it slightly around the spike
-      headParts = [place(spathe, new THREE.Vector3(0, 0, 0), new THREE.Euler(-0.28, 0, 0))];
+      headParts = [
+        tagGrowth(
+          place(spathe, new THREE.Vector3(0, 0, 0), new THREE.Euler(-0.28, 0, 0)),
+          new THREE.Vector3(0, 0, 0),
+          new THREE.Vector3(1, 0, 0),
+          0.9,
+          0
+        ),
+      ];
       const sp = spec.spike;
       if (sp) coreParts = [spadix(sp.height * (0.5 + bloom * 0.5), sp.radius)];
       break;
@@ -252,14 +283,23 @@ export function buildFlower(spec: Specimen, bloom: number): FlowerGeometry {
           segmentsU: 12,
           segmentsV: 6,
         });
-        headParts.push(place(geo, new THREE.Vector3(Math.sin(a) * 0.05, 0.04, 0), new THREE.Euler(-1.15 + Math.abs(a) * 0.2, a, a * 0.6)));
+        const fanPos = new THREE.Vector3(Math.sin(a) * 0.05, 0.04, 0);
+        headParts.push(
+          tagGrowth(
+            place(geo, fanPos, new THREE.Euler(-1.15 + Math.abs(a) * 0.2, a, a * 0.6)),
+            fanPos,
+            new THREE.Vector3(Math.cos(a), 0, -Math.sin(a)),
+            0.7,
+            0.15 + (i / Math.max(1, p.count - 1)) * 0.4
+          )
+        );
       }
       coreParts = [place(spadix(0.4, 0.05), new THREE.Vector3(0.02, 0.05, 0.05), new THREE.Euler(-0.5, 0, 0))];
       break;
     }
   }
 
-  const head = paintGradient(mergeAll(headParts), petalFrom, petalTo);
+  const head = paintGradient(mergeAll(headParts, GROWTH_ATTRIBUTES), petalFrom, petalTo);
   const core = coreParts.length ? paintFlat(mergeAll(coreParts), coreColour) : null;
 
   // A short collar hides the join between petal base and stem. It is built in the head's
