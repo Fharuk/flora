@@ -10,8 +10,9 @@ import { buildDisplayStem, buildFlower, speciesBloom } from "@/components/three/
 import { StudioEnvironment } from "@/components/three/studio-environment";
 import { flowerMaterial } from "@/components/three/materials";
 import { useDocumentVisible, useInView, useReducedMotion, useWebGLSupport } from "@/components/three/lib/use-capabilities";
+import { RarityChip } from "@/components/synth/lab";
 import { getSpecimen } from "@/lib/hybrids";
-import { palettes, specimens } from "@/lib/specimens";
+import { palettes, rarityBySlug, specimens } from "@/lib/specimens";
 import { useSynth } from "@/lib/store";
 import { cn } from "@/lib/utils";
 
@@ -96,7 +97,7 @@ export function Vitrine() {
       <div className="mx-auto w-full max-w-[92rem]">
         <div className="flex flex-wrap items-end justify-between gap-6 border-b border-line pb-6">
           <div>
-            <p className="label mb-4">03 — Exotic specimens</p>
+            <p className="label mb-4">04 — Exotic specimens</p>
             <h2 className="display max-w-2xl text-[clamp(2.2rem,4.6vw,3.8rem)]">
               Ten that were never <span className="italic text-accent">meant</span> to be glass.
             </h2>
@@ -130,8 +131,11 @@ export function Vitrine() {
                       </span>
                       <span>
                         <span className="block font-display text-[1.35rem] leading-tight">{s.name}</span>
-                        <span className="block font-mono text-[0.55rem] uppercase tracking-[0.14em] text-ink-soft">
-                          {s.family} · {s.origin}
+                        <span className="mt-1 flex flex-wrap items-center gap-2">
+                          <span className="font-mono text-[0.55rem] uppercase tracking-[0.14em] text-ink-soft">
+                            {s.family} · {s.origin}
+                          </span>
+                          <RarityChip rarity={rarityBySlug[s.slug] ?? "common"} />
                         </span>
                       </span>
                       <span
@@ -229,6 +233,12 @@ export function Vitrine() {
                 <div className="flex justify-between gap-3">
                   <dt className="label">Weight</dt>
                   <dd className="text-ink">{specimen.weight.toFixed(1)}</dd>
+                </div>
+                <div className="flex items-center justify-between gap-3 border-t border-line pt-2">
+                  <dt className="label">Rarity</dt>
+                  <dd>
+                    <RarityChip rarity={rarityBySlug[specimen.slug] ?? "common"} />
+                  </dd>
                 </div>
               </dl>
             </div>

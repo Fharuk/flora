@@ -135,7 +135,7 @@ export function Garden() {
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
-            <p className="font-mono text-[0.62rem] tracking-[0.34em] opacity-45">05 — The garden</p>
+            <p className="font-mono text-[0.62rem] tracking-[0.34em] opacity-45">06 — The garden</p>
             <h2 className="mt-4 font-serif text-[clamp(1.9rem,4.4vw,3.2rem)] leading-[1.02] tracking-[-0.02em]">
               Everything anyone has made.
             </h2>

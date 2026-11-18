@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 import { encodeBouquet } from "@/lib/bouquet";
-import { useSynth } from "@/lib/store";
+import { ownsBouquetUrl, useSynth } from "@/lib/store";
 
 /** Keeps the attribute in sync when the theme changes after load. */
 export function ThemeBoot() {
@@ -42,6 +42,9 @@ export function UrlSync() {
 
   useEffect(() => {
     if (!hydrated) return;
+
+    // the gift page owns its own URL; only the composing routes mirror state into it
+    if (!ownsBouquetUrl(window.location.pathname)) return;
 
     let last = "";
 

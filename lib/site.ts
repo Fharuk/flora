@@ -38,6 +38,7 @@ export const synthSite = {
   nav: [
     { label: "Instrument", href: "#instrument" },
     { label: "Botany", href: "#botany" },
+    { label: "Lab", href: "#lab" },
     { label: "Specimens", href: "#specimens" },
     { label: "Garden", href: "#garden" },
     { label: "Studio", href: "/studio" },

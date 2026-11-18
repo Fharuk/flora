@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { Botany } from "@/components/synth/botany";
 import { Garden } from "@/components/synth/garden";
+import { HybridLab } from "@/components/synth/lab";
 import { Header } from "@/components/synth/header";
 import { Instrument, InstrumentControls } from "@/components/synth/instrument";
 import { Notes, SynthFooter } from "@/components/synth/notes";
@@ -36,10 +37,11 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Header />
-      <main>
+      <main id="main">
         <Instrument>
           <InstrumentControls />
           <Botany />
+          <HybridLab />
           <Vitrine />
           <Notes />
           <Garden />

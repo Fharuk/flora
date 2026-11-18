@@ -68,10 +68,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="min-h-screen bg-paper text-ink antialiased">
         <a
-          href="#instrument"
+          href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-full focus:bg-ink focus:px-5 focus:py-3 focus:text-sm focus:text-paper"
         >
-          Skip to the instrument
+          Skip to content
         </a>
         <ThemeBoot />
         <UrlSync />

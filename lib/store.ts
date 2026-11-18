@@ -44,6 +44,17 @@ type SynthState = {
 
 const MAX_SPECIES = 5;
 
+/**
+ * Routes that own the bouquet URL.
+ *
+ * `/gift/[code]` deliberately does not: the gift page sets its own composition from the
+ * database, and a URL sync running there would append the homepage's bouquet to a gift link
+ * and then overwrite the gift with it on hydration.
+ */
+export function ownsBouquetUrl(pathname: string): boolean {
+  return pathname === "/" || pathname === "/studio";
+}
+
 export const useSynth = create<SynthState>((set, get) => ({
   config: DEFAULT_CONFIG,
   theme: "light",
@@ -53,11 +64,16 @@ export const useSynth = create<SynthState>((set, get) => ({
   hydrate: () => {
     if (get().hydrated || typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
+    // the theme is a page-level preference and is read on every route …
     const theme = resolveInitialTheme(
       window.location.search,
       window.matchMedia("(prefers-color-scheme: dark)").matches
     );
-    const config = params.toString() ? decodeBouquet(params) : DEFAULT_CONFIG;
+    // … but the bouquet only belongs to the routes that compose one
+    const config =
+      ownsBouquetUrl(window.location.pathname) && params.toString()
+        ? decodeBouquet(params)
+        : DEFAULT_CONFIG;
     set({ config, theme, hydrated: true });
   },
 

@@ -30,10 +30,11 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { code } = await params;
   const entry = await loadEntry(code);
-  if (!entry) return { title: `Not found — ${synthSite.name}` };
+  if (!entry) return { title: "Not found" };
   const title = entry.message ? `${entry.title} — for you` : entry.title;
+  // the root layout applies the "%s — Flora-Synth" template
   return {
-    title: `${title} — ${synthSite.name}`,
+    title,
     description: entry.message
       ? `${entry.message} — a bouquet composed in ${synthSite.name}.`
       : "A bouquet composed in Flora-Synth. Nothing here is a photograph.",
@@ -56,7 +57,7 @@ export default async function GiftPage({ params }: { params: Promise<{ code: str
   return (
     <>
       <Header />
-      <main>
+      <main id="main">
         <GiftExperience entry={entry} />
         <SynthFooter />
       </main>

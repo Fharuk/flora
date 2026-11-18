@@ -52,7 +52,7 @@ export function Notes() {
       <div className="mx-auto w-full max-w-[92rem]">
         <div className="grid grid-cols-12 gap-8">
           <div className="col-span-12 lg:col-span-4">
-            <p className="label mb-4">04 — Notes from the bench</p>
+            <p className="label mb-4">05 — Notes from the bench</p>
             <h2 className="display max-w-sm text-[clamp(2rem,4vw,3.2rem)]">
               The method behind the <span className="italic text-accent">material.</span>
             </h2>
