@@ -42,14 +42,26 @@ every species a *recipe* (`lib/specimens.ts`) that can be re-parameterised, inst
 animated, and drawn at any resolution. A bouquet of 11 stems costs one geometry per
 species, not one model per flower.
 
-**Stateless, URL-encoded composition.** `lib/bouquet.ts` turns a config into ~60 characters
-of query string: `?seed=k1x2&f=gh-da-va&p=a&a=w&v=f&d=9&b=95&theme=light`. Decoding is a
-pure function, so the same link always rebuilds the same bouquet — on any device, forever,
-with no database. Supabase was considered and deliberately deferred; there is a clean seam
-for a public gallery later, but it is not needed for the instrument to work.
+**URL-encoded composition first.** `lib/bouquet.ts` turns a config into ~60 characters of
+query string: `?seed=k1x2&f=gh-da-va&p=a&a=w&v=f&d=9&b=95&theme=light`. Decoding is a pure
+function, so the same link always rebuilds the same bouquet — on any device, forever, with
+no database involved. Every feature works from that: the instrument, the studio, the share
+link, and the hybrid recipe (`x_<a>_<b>_<seed>`) all read the URL and nothing else.
 
-**Supabase / auth: not used.** You asked for stateless and no authentication. Nothing here
-touches a server at runtime.
+**Supabase for the garden only, and optional.** The garden feed and the sealed gift links
+need somewhere to keep a row, so they use Supabase (a separate schema in an existing
+project). That is the *only* server state in the product, and it is strictly additive:
+with no credentials configured the app still runs, the garden shows a quiet empty state,
+saving is disabled, and every other surface is unaffected. No accounts, no uploads, no
+auth — a saved bouquet is addressed by a short code, not by a user.
+
+**Visual direction: a candlelit atelier.** Garnet for love, antique gold for luxury, warm
+ivory paper, and a high-contrast serif with a true italic (Cormorant Garamond) against
+Schibsted Grotesk for labels. Dark mode is velvet burgundy rather than blue-black. The
+glass in the scene is deliberately lit warm with a single cool rim light: that split is
+what separates glass from ceramic on a warm ground, and it is why the vessel no longer
+reads as a milky pot. Tokens and ornament classes (`.eyebrow`, `.emphasis`, `.seal`,
+`.frost`, `.btn-primary`) live in `app/globals.css`.
 
 **Hosting: Vercel.** Native for Next.js, edge caching for the static page, and the OG route
 runs as a serverless function. Netlify would work; Vercel is the shorter path with no
