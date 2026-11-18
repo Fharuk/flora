@@ -175,17 +175,30 @@ export function breedHybrid(a: Specimen, b: Specimen, seed: number): Hybrid {
   const stem = mixHex(a.colours.stem, b.colours.stem, 0.5);
 
   // ---- rarity from how far the child travelled from its parents
-  const divergence = clamp01(
-    (Math.abs(pa.count - pb.count) / 12) * 0.3 +
-      (colourDistance(a.colours.petal[0], b.colours.petal[0]) || 0) * 0.35 +
-      (a.form !== b.form ? 0.2 : 0) +
-      (a.finish !== b.finish ? 0.1 : 0) +
-      (BOTANIC[a.slug] !== BOTANIC[b.slug] ? 0.15 : 0) +
-      (form !== bodyDonor.form ? 0.25 : 0)
-  );
+  // Normalised against the sum of the weights, not clamped to 1: the components can add to
+  // 1.5, so clamping saturated nearly every cross at "maximum divergence".
+  const divergence =
+    clamp01(
+      (Math.abs(pa.count - pb.count) / 12) * 0.3 +
+        (colourDistance(a.colours.petal[0], b.colours.petal[0]) || 0) * 0.35 +
+        (a.form !== b.form ? 0.2 : 0) +
+        (a.finish !== b.finish ? 0.1 : 0) +
+        (BOTANIC[a.slug] !== BOTANIC[b.slug] ? 0.15 : 0) +
+        (form !== bodyDonor.form ? 0.25 : 0)
+    ) / 1.5;
 
+  /**
+   * Rarity is not divergence.
+   *
+   * The first version tiered the child on divergence alone, which put almost every cross in
+   * legendary or mythic — the scale saturated and the badge stopped carrying information.
+   * Divergence now contributes most of the score, but a little luck is required on top, so a
+   * genuinely novel cross can still come out merely rare, and mythic stays rare enough to
+   * mean something.
+   */
+  const score = divergence * 0.85 + rand() * 0.2;
   const rarity: Rarity =
-    divergence > 0.82 ? "mythic" : divergence > 0.64 ? "legendary" : divergence > 0.44 ? "exotic" : divergence > 0.22 ? "rare" : "common";
+    score > 0.72 ? "mythic" : score > 0.6 ? "legendary" : score > 0.48 ? "exotic" : score > 0.36 ? "rare" : "common";
 
   const epithet = pick(EPITHETS);
   const genusA = GENERA[a.slug] ?? a.latin.split(" ")[0];
