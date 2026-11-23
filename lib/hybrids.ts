@@ -89,29 +89,31 @@ const EPITHETS = [
   "Anthesis", "Requiem", "Hollow Star", "Sable", "Meridian",
 ];
 
+/* the ten specimens the instrument actually carries — a hybrid needs a genus
+   for each parent, and a missing key would print "undefined" in the card */
 const GENERA: Record<string, string> = {
   "ghost-orchid": "Dendrophylax",
-  "cymbidium-orchid": "Cymbidium",
   "king-protea": "Protea",
-  "gloriosa-lily": "Gloriosa",
-  "bird-of-paradise": "Strelitzia",
-  "black-hellebore": "Helleborus",
+  "peony": "Paeonia",
+  "garden-rose": "Rosa",
+  "ranunculus": "Ranunculus",
+  "tulip": "Tulipa",
+  "anemone": "Anemone",
+  "cosmos": "Cosmos",
   "cafe-au-lait-dahlia": "Dahlia",
-  "titan-arum": "Amorphophallus",
-  "persian-ranunculus": "Ranunculus",
   "velvet-anthurium": "Anthurium",
 };
 
 const BOTANIC: Record<string, string> = {
   "ghost-orchid": "Orchidaceae",
-  "cymbidium-orchid": "Orchidaceae",
   "king-protea": "Proteaceae",
-  "gloriosa-lily": "Colchicaceae",
-  "bird-of-paradise": "Strelitziaceae",
-  "black-hellebore": "Ranunculaceae",
+  "peony": "Paeoniaceae",
+  "garden-rose": "Rosaceae",
+  "ranunculus": "Ranunculaceae",
+  "tulip": "Liliaceae",
+  "anemone": "Ranunculaceae",
+  "cosmos": "Asteraceae",
   "cafe-au-lait-dahlia": "Asteraceae",
-  "titan-arum": "Araceae",
-  "persian-ranunculus": "Ranunculaceae",
   "velvet-anthurium": "Araceae",
 };
 

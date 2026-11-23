@@ -52,7 +52,7 @@ export type Stem = {
 export const DEFAULT_CONFIG: BouquetConfig = {
   seed: 20831,
   // garnet, warm ivory and blush — the opening bouquet sets the register for the page
-  species: ["ghost-orchid", "cafe-au-lait-dahlia", "persian-ranunculus"],
+  species: ["ghost-orchid", "cafe-au-lait-dahlia", "ranunculus"],
   palette: "chrome",
   density: 9,
   arrangement: "spiral",
