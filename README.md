@@ -1,9 +1,12 @@
 # Flora-Synth
 
-A botanical instrument. Ten rare specimens, rendered as glass and chrome, composed into
-bouquets in real time in the browser — and encoded entirely in the URL.
+A botanical studio: one continuous 3D film you scroll through, then an instrument that
+composes ten procedurally drawn specimens into a bouquet — encoded entirely in the URL.
 
 **No accounts. No uploads. No stored bouquets.** A link *is* a bouquet.
+
+Nothing is for sale. There are no prices, plans, bags or checkout: the film opens a bouquet
+over three days of window light, and the composer seals a link rather than an order.
 
 ```bash
 npm install
@@ -15,13 +18,21 @@ npm run build && npm start
 
 ## What it is
 
-A single-page WebGL instrument with three surfaces:
+The film owns `/`; the instrument it replaced still runs, unchanged, on its own routes.
 
 | Surface | Route | What it does |
 |---|---|---|
-| **Instrument** | `/` | A live 3D bouquet you can regenerate, restyle and share |
-| **Algorithmic botany** | `/#botany` | The same mesh twice — wireframe vs. physical render, split by a draggable plane |
-| **Vitrine** | `/#specimens` | Ten species, each selectable, each addable to the bouquet |
+| **The film** | `/` | The front door. Scroll drives one clock: a bouquet opens over three days, sheds its petals, goes under the lens into an anemone's stamens, then steps through all ten specimens and into the composer |
+| **Instrument** | `/compose` | The live 3D bouquet you can regenerate, restyle and share |
+| **Algorithmic botany** | `/plot` | The same mesh twice — wireframe vs. physical render, split by a draggable plane |
+| **The studio** | `/studio` | Cross two specimens into a hybrid, listen to the arrangement, export for print |
+| **The garden** | `/collection` | Compositions saved as links, public and permanent |
+
+The film is one renderer and one `requestAnimationFrame`: camera moves, the time-lapse,
+the petals, the library rail and every text cue are all written by the same loop in
+`lib/stamen/director.ts`. It never adds a light or toggles shadows at runtime — that
+recompiles every material and the scroll stutters — and it honours a phone's smaller frame
+budget. `?debug` exposes `__stamen.go(chapter, p)`, `__stamen.state()` and `__stamen.perf`.
 
 Everything is procedural. There are **no GLTF/GLB files, no HDRI maps, no textures on
 disk, and no images of flowers**. Every petal, stem, caustic and reflection is generated
@@ -55,7 +66,7 @@ with no credentials configured the app still runs, the garden shows a quiet empt
 saving is disabled, and every other surface is unaffected. No accounts, no uploads, no
 auth — a saved bouquet is addressed by a short code, not by a user.
 
-**Visual direction: a candlelit atelier.** Garnet for love, antique gold for luxury, warm
+**Visual direction: a candlelit atelier, lit by one window.** Garnet for love, antique gold for luxury, warm
 ivory paper, and a high-contrast serif with a true italic (Cormorant Garamond) against
 Schibsted Grotesk for labels. Dark mode is velvet burgundy rather than blue-black. The
 glass in the scene is deliberately lit warm with a single cool rim light: that split is
