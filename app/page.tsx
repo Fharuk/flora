@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 
-import { Botany } from "@/components/synth/botany";
-import { Garden } from "@/components/synth/garden";
-import { HybridLab } from "@/components/synth/lab";
-import { Header } from "@/components/synth/header";
-import { Instrument, InstrumentControls } from "@/components/synth/instrument";
-import { Notes, SynthFooter } from "@/components/synth/notes";
-import { Vitrine } from "@/components/synth/vitrine";
-import { specimenSlugs } from "@/lib/specimens";
+import Stage from "@/components/stamen/Stage";
+import Loader from "@/components/stamen/Loader";
+import Nav from "@/components/stamen/Nav";
+import Hud from "@/components/stamen/Hud";
+import Cart from "@/components/stamen/Cart";
+import Build from "@/components/stamen/Build";
+import { Bloom, Scatter, Closer, Stems } from "@/components/stamen/Chapters";
+import { Care, Footer } from "@/components/stamen/Care";
+import { SPECIES } from "@/lib/stamen/flora";
 import { synthSite } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -16,6 +17,18 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
+/**
+ * Flora-Synth, as one live 3D film you scroll through.
+ *
+ * A bouquet opens over three days of window light, its petals scatter at the
+ * lens, the camera goes into an anemone's stamens, then through the ten
+ * specimens one by one, and finally into a composition you build yourself.
+ * Every flower, the vase, the wrap and the light are built in code in the
+ * browser — no model, image or video file is ever fetched.
+ *
+ * The film owns the homepage. The instrument that used to live here still runs,
+ * unchanged, at /compose, /studio, /collection and /plot.
+ */
 export default function HomePage() {
   const jsonLd = {
     "@context": "https://schema.org",
@@ -26,28 +39,32 @@ export default function HomePage() {
     applicationCategory: "DesignApplication",
     operatingSystem: "Web",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
-    about: specimenSlugs.map((slug) => ({ "@type": "Thing", name: slug })),
+    about: Object.values(SPECIES).map((s) => ({ "@type": "Thing", name: s.name })),
   };
 
   return (
-    <>
+    <div className="stamen relative">
       <script
         type="application/ld+json"
         // static structured data built from local content
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Header />
-      <main id="main">
-        <Instrument>
-          <InstrumentControls />
-          <Botany />
-          <HybridLab />
-          <Vitrine />
-          <Notes />
-          <Garden />
-        </Instrument>
-        <SynthFooter />
+      <Stage />
+      <Loader />
+      <Nav />
+      <Hud />
+      <main id="main" className="relative z-10">
+        <Bloom />
+        <Scatter />
+        <Closer />
+        <Stems />
+        <Build />
+        <Care />
       </main>
-    </>
+      <div className="relative z-10">
+        <Footer />
+      </div>
+      <Cart />
+    </div>
   );
 }

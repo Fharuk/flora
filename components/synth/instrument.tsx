@@ -106,7 +106,7 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
               </h1>
 
               <p className="mt-4 hidden text-[0.86rem] leading-relaxed text-ink-soft sm:block">
-                Bouquets that never wilt. Every petal is drawn from numbers in your browser —
+                Ten specimens, drawn in the browser. Every petal comes from numbers —
                 <span className="italic text-ink"> nothing here is a photograph.</span>
               </p>
 

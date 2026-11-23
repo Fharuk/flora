@@ -1,0 +1,328 @@
+/*
+ * The film's stylesheet, imported *into* the Tailwind pipeline rather than
+ * loaded beside it. Two separate sheets mean two separate bundles, and the
+ * layered sheet lands before the unlayered one — which let the mobile
+ * font-size beat `md:text-[7.2vw]`. One entry point keeps the order: theme
+ * first, then the film's hand-written rules as components.
+ */
+@import "tailwindcss";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@layer base {
+  * {
+    border-color: hsl(0 0% 89.8%);
+  }
+  body {
+    margin: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ STAMEN */
+/* The type follows the light. On the lit wall and on paper it's plum; at
+   night in the studio and on the garnet field it's cream. The director sets
+   html[data-stamen-tone] to day, night, paper or field. */
+
+/*
+ * Scoped to the film's own page. As a bare `html, body` rule this was unlayered
+ * and therefore outranked the instrument's layered base rule on *every* route,
+ * so /collection painted the film's dark ground under the instrument's dark
+ * theme and the page came up nearly unreadable.
+ */
+html:has(.stamen),
+html:has(.stamen) body {
+  background: #150a0d;
+  overscroll-behavior: none;
+}
+
+/* the film's faces, under the names its own stylesheet uses */
+@font-face {
+  font-family: "Fraunces";
+  src: local("Fraunces Variable");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Fraunces";
+  src: local("Fraunces Variable");
+  font-weight: 100 900;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist";
+  src: local("Geist Variable");
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: local("Geist Mono Variable");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+.stamen {
+  /* Flora-Synth's garnet and antique gold, kept under the kit's variable names
+     so every component that already references them re-colours at once */
+  --magenta: #9e2b3e;
+  --magenta-deep: #7d1f2f;
+  --plum: #2a1215;
+  --cream: #fbf4ec;
+  --blush: #f3d9d2;
+  --gold: #a9803f;
+  --ink: var(--plum);
+  --surface: #f5e9dd;
+  /* the film's own token, and a little more specific than the instrument's
+     `text-ink` colour utility so the two palettes cannot argue */
+  --stamen-ink: var(--ink);
+  color: var(--stamen-ink);
+  font-family: "Geist", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  /*
+   * No `transition: color` here. The tone is a single attribute flip, and a
+   * transition on the container was restarting against its own inherited value
+   * every frame, so it never advanced and left dark type on a dark room. The
+   * beats fade themselves; the tone can simply switch.
+   */
+}
+html[data-stamen-tone="night"] .stamen,
+html[data-stamen-tone="field"] .stamen {
+  --ink: var(--cream);
+  --surface: #2a1215;
+}
+.stamen,
+.stamen-card {
+  --ink-soft: color-mix(in srgb, var(--ink) 72%, transparent);
+  --ink-faint: color-mix(in srgb, var(--ink) 45%, transparent);
+  --line: color-mix(in srgb, var(--ink) 22%, transparent);
+  --chip: color-mix(in srgb, var(--ink) 10%, transparent);
+}
+/* a card that reads the same on every light */
+.stamen-card {
+  --ink: var(--plum);
+  color: var(--ink);
+  background: rgba(255, 246, 244, 0.96);
+}
+
+/* the display face: Fraunces, soft and a little wonky */
+.stamen-serif {
+  font-family: "Fraunces", "Times New Roman", serif;
+  font-variation-settings: "SOFT" 100, "WONK" 1;
+  font-weight: 340;
+  letter-spacing: -0.025em;
+  line-height: 0.92;
+}
+.stamen-serif em,
+.stamen-italic {
+  font-style: italic;
+  font-variation-settings: "SOFT" 100, "WONK" 1;
+}
+.stamen-wordmark {
+  font-family: "Fraunces", serif;
+  font-variation-settings: "SOFT" 0, "WONK" 0;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+}
+.stamen-mono {
+  font-family: "Geist Mono", ui-monospace, monospace;
+  letter-spacing: 0.04em;
+}
+.stamen .eyebrow {
+  /* the instrument also defines a bare .eyebrow; the film's is namespaced */
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+/* glass that takes the light's color */
+.stamen-glass {
+  background: color-mix(in srgb, var(--ink) 9%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+  transition: background-color 0.8s, border-color 0.8s, color 0.8s;
+}
+
+@layer components {
+  :where(.stamen) [data-beat] {
+    will-change: opacity, transform;
+  }
+}
+
+.stamen .sticky-stage {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100lvh;
+  overflow: hidden;
+  pointer-events: none;
+}
+.stamen .sticky-stage a,
+.stamen .sticky-stage button,
+.stamen .sticky-stage input,
+.stamen .sticky-stage textarea,
+.stamen .sticky-stage label {
+  pointer-events: auto;
+}
+
+/* the time-lapse readout: a camera back */
+.stamen-hud {
+  font-family: "Geist Mono", ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.stamen-hud .rec {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #ff2e63;
+  box-shadow: 0 0 0 3px color-mix(in srgb, #ff2e63 28%, transparent);
+  animation: stamen-rec 1.4s steps(2, jump-none) infinite;
+}
+@keyframes stamen-rec {
+  50% {
+    opacity: 0.2;
+  }
+}
+/* the sun dial: an arc, the sun (or the moon) on it */
+.stamen-dial {
+  position: relative;
+  width: 56px;
+  height: 30px;
+  overflow: hidden;
+}
+.stamen-dial::before {
+  content: "";
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  top: 3px;
+  height: 52px;
+  border-radius: 999px;
+  border: 1px dashed var(--ink-faint);
+}
+.stamen-dial i {
+  --a: calc(var(--arc, 0.5) * 180deg - 180deg);
+  position: absolute;
+  left: 50%;
+  top: 29px;
+  width: 9px;
+  height: 9px;
+  margin: -4.5px 0 0 -4.5px;
+  border-radius: 999px;
+  background: #ffb35c;
+  box-shadow: 0 0 10px #ffb35c;
+  transform: rotate(var(--a)) translateX(26px);
+  transition: background 0.4s;
+}
+.stamen-dial[data-night="1"] i {
+  background: #dfe4ff;
+  box-shadow: 0 0 8px #b8c4ff;
+}
+
+/* the close-up's labels: a dot on the part, a hairline, the name */
+.stamen-tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  transform: translateY(-50%);
+  white-space: nowrap;
+}
+.stamen-tag .dot {
+  width: 9px;
+  height: 9px;
+  margin-left: -4.5px;
+  border-radius: 999px;
+  border: 1.5px solid var(--cream);
+  background: color-mix(in srgb, var(--cream) 20%, transparent);
+}
+.stamen-tag .line {
+  width: 46px;
+  height: 1px;
+  background: var(--cream);
+  opacity: 0.7;
+}
+.stamen-tag .label {
+  /*
+   * The kit could rely on labels being cream, because the field behind them was
+   * always bright magenta. On Flora-Synth the tags land over pale petals as
+   * often as over dark ones, so the label carries its own chip — a specimen tag
+   * pinned to the plate, readable on anything.
+   */
+  margin-left: 10px;
+  padding: 3px 9px 4px;
+  color: var(--cream);
+  background: color-mix(in srgb, var(--plum) 82%, transparent);
+  border-radius: 2px;
+  backdrop-filter: blur(3px);
+}
+.stamen-tag.is-left {
+  flex-direction: row-reverse;
+  transform: translate(-100%, -50%);
+}
+.stamen-tag.is-left .dot {
+  margin-left: 0;
+  margin-right: -4.5px;
+}
+.stamen-tag.is-left .label {
+  margin-left: 0;
+  margin-right: 10px;
+  padding: 3px 9px 4px;
+  text-align: right;
+}
+@media (min-width: 768px) {
+  .stamen-tag .line {
+    width: 90px;
+  }
+}
+
+/* the library's index: six ticks, the one in front lit */
+.stamen-tick {
+  height: 2px;
+  flex: 1;
+  border-radius: 2px;
+  background: var(--line);
+  transition: background 0.5s;
+}
+.stamen-tick[data-on="1"] {
+  background: var(--ink);
+}
+
+/* a word rising into place */
+@keyframes stamen-rise {
+  from {
+    transform: translateY(110%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+.stamen-rise {
+  animation: stamen-rise 0.9s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+/* a row that scrolls sideways without a bar */
+.stamen-noscroll {
+  scrollbar-width: none;
+}
+.stamen-noscroll::-webkit-scrollbar {
+  display: none;
+}
+
+.stamen :focus-visible {
+  outline: 2px solid var(--magenta);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamen-rise,
+  .stamen-hud .rec {
+    animation: none;
+  }
+}

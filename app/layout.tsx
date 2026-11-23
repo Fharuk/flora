@@ -12,9 +12,19 @@ import "@fontsource/schibsted-grotesk/500.css";
 import "@fontsource/schibsted-grotesk/600.css";
 import "@fontsource/jetbrains-mono/400.css";
 import "@fontsource/jetbrains-mono/500.css";
+/* The film's own faces. Its stylesheet asks for "Fraunces" and "Geist"; the
+   packages register "Fraunces Variable" / "Geist Variable" / "Geist Mono
+   Variable", so these locals name both and either resolution works. */
+import "@fontsource-variable/fraunces/full.css";
+import "@fontsource-variable/fraunces/full-italic.css";
+import "@fontsource-variable/geist/index.css";
+import "@fontsource-variable/geist-mono/index.css";
+/* the film's sheet is first: it carries Tailwind's own entry, and the
+   instrument's tokens come after it so they still win on the instrument pages */
+import "./stamen.css";
 import "./globals.css";
 
-import { ThemeBoot, UrlSync } from "@/components/synth/theme-boot";
+import { ThemeBoot } from "@/components/synth/theme-boot";
 import { THEME_BOOT_SCRIPT } from "@/lib/theme";
 import { synthSite } from "@/lib/site";
 
@@ -79,7 +89,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         <ThemeBoot />
-        <UrlSync />
         {children}
       </body>
     </html>

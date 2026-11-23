@@ -27,21 +27,21 @@ function resolveSiteUrl(): string {
 export const synthSite = {
   name: "Flora-Synth",
   wordmark: "Flora-Synth",
-  tagline: "Bouquets that never wilt",
+  tagline: "Ten specimens, drawn in the browser",
   description:
-    "A florist's counter for impossible bouquets. Ten rare specimens cut in glass and gold, composed in your browser and sealed into a link — no account, no upload, no two ever alike.",
+    "A studio of ten impossible flowers, cut in glass and gold. One continuous 3D film you scroll through, then a composer: every petal is drawn from numbers in your browser and the link is the whole recipe — no account, no upload, no two ever alike.",
   url: resolveSiteUrl(),
   /** Placeholder contact — replace with the real studio address before launch. */
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "studio@flora-synth.studio",
   location: "Lagos · Berlin",
   year: new Date().getFullYear(),
+  // The film owns `/`; these are the instrument's own pages, so every href is a
+  // real route rather than an anchor that only exists on one of them.
   nav: [
-    { label: "Instrument", href: "#instrument" },
-    { label: "Botany", href: "#botany" },
-    { label: "Lab", href: "#lab" },
-    { label: "Specimens", href: "#specimens" },
-    { label: "Garden", href: "#garden" },
-    { label: "Studio", href: "/studio" },
+    { label: "The film", href: "/" },
+    { label: "Compose", href: "/compose" },
+    { label: "The studio", href: "/studio" },
+    { label: "The garden", href: "/collection" },
   ],
   socials: [
     { label: "Instagram", href: "https://instagram.com" },

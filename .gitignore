@@ -39,3 +39,6 @@ yarn-error.log*
 /playwright-report/
 /blob-report/
 /.playwright/
+
+# the licensed Lumette kit archive stays out of the public repo (see THIRD_PARTY.md)
+google_drive/

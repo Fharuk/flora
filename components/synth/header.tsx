@@ -121,7 +121,7 @@ export function Header() {
               {synthSite.wordmark}
             </span>
             <span className="mt-1 block font-sans text-[0.42rem] uppercase tracking-[0.42em] text-ink-soft">
-              Florist&nbsp;·&nbsp;Est.&nbsp;MMXXVI
+              Botanical studio&nbsp;·&nbsp;Est.&nbsp;MMXXVI
             </span>
           </span>
         </a>
