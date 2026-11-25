@@ -5,9 +5,24 @@ import { useEffect } from "react";
 import { encodeBouquet } from "@/lib/bouquet";
 import { ownsBouquetUrl, useSynth } from "@/lib/store";
 
-/** Keeps the attribute in sync when the theme changes after load. */
+/**
+ * Keeps the attribute in sync when the theme changes after load, and hydrates
+ * the instrument's store from the URL on first mount.
+ *
+ * Hydration used to live inside `UrlSync`, which was mounted in the root layout.
+ * When the film took over `/`, that component was pulled out so it could not
+ * rewrite the film's own `?size=&c=&w=&v=` recipe — and that silently took the
+ * hydration with it, so every existing share link loaded the default bouquet
+ * instead of the one it encoded. Reading the URL and writing it back are two
+ * different jobs; only the second one is route-specific.
+ */
 export function ThemeBoot() {
   const theme = useSynth((s) => s.theme);
+  const hydrate = useSynth((s) => s.hydrate);
+
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
 
   useEffect(() => {
     const root = document.documentElement;

@@ -51,8 +51,13 @@ const MAX_SPECIES = 5;
  * database, and a URL sync running there would append the homepage's bouquet to a gift link
  * and then overwrite the gift with it on hydration.
  */
+/**
+ * Routes whose URL *is* the bouquet. `/compose` joined the list when the
+ * instrument moved off `/`; the film owns `/` now and keeps its own recipe
+ * params, so it must not mirror the instrument's state into its address bar.
+ */
 export function ownsBouquetUrl(pathname: string): boolean {
-  return pathname === "/" || pathname === "/studio";
+  return pathname === "/compose" || pathname === "/studio";
 }
 
 export const useSynth = create<SynthState>((set, get) => ({
@@ -139,7 +144,12 @@ export function useShareUrl() {
     // but looked broken wherever it was displayed or pasted.
     setOrigin(window.location.origin + window.location.pathname.replace(/\/+$/, ""));
   }, []);
-  const path = `/?${encodeBouquet(config)}&theme=${theme}`;
+  /*
+   * `/` is the film now — it reads `?size=&c=&w=&v=`, not this recipe, so a
+   * copied link pointing there opened the default bouquet and quietly dropped
+   * the composition. Share links have to name the instrument's route.
+   */
+  const path = `/compose/?${encodeBouquet(config)}&theme=${theme}`;
   return origin ? `${origin}${path}` : path;
 }
 
