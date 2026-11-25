@@ -139,10 +139,14 @@ export function useShareUrl() {
   const theme = useSynth((s) => s.theme);
   const [origin, setOrigin] = useState("");
   useEffect(() => {
-    // Trailing slash stripped: pathname is "/" at the root, so keeping it produced
-    // "https://host/" + "/?seed=…" — a share link with a double slash that still worked
-    // but looked broken wherever it was displayed or pasted.
-    setOrigin(window.location.origin + window.location.pathname.replace(/\/+$/, ""));
+    /*
+     * Only the host, never the path. This used to append
+     * `location.pathname`, which was harmless while the instrument lived at "/"
+     * and became a doubled route the moment it moved: on /compose the link read
+     * `/compose/compose/?seed=…`, and on /studio it read `/studio/compose/?…`,
+     * neither of them a page. The route is named once, below.
+     */
+    setOrigin(window.location.origin);
   }, []);
   /*
    * `/` is the film now — it reads `?size=&c=&w=&v=`, not this recipe, so a
