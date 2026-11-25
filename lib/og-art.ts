@@ -272,11 +272,11 @@ function bloomSvg(config: BouquetConfig) {
     `<stop offset="0" stop-color="#9e2b3e" stop-opacity="0.34"/>` +
     `<stop offset="1" stop-color="#9e2b3e" stop-opacity="0"/>` +
     `</radialGradient>` +
-    `<linearGradient id="seam" x1="0" y1="0" x2="1" y2="0">` +
-    `<stop offset="0" stop-color="#1a0a0f"/>` +
-    `<stop offset="0.55" stop-color="#1a0a0f" stop-opacity="0.82"/>` +
+    `<radialGradient id="seam" cx="0.5" cy="0.5" r="0.5">` +
+    `<stop offset="0" stop-color="#1a0a0f" stop-opacity="0.96"/>` +
+    `<stop offset="0.52" stop-color="#1a0a0f" stop-opacity="0.6"/>` +
     `<stop offset="1" stop-color="#1a0a0f" stop-opacity="0"/>` +
-    `</linearGradient>` +
+    `</radialGradient>` +
     `<radialGradient id="pool" cx="0.5" cy="0.5" r="0.5">` +
     `<stop offset="0" stop-color="#0a0205" stop-opacity="0.85"/>` +
     `<stop offset="0.55" stop-color="#0a0205" stop-opacity="0.45"/>` +
@@ -295,22 +295,26 @@ function bloomSvg(config: BouquetConfig) {
     blooms.map((b) => b.body).join("") +
     `<rect width="${ART_W}" height="${ART_H}" fill="url(#key)"/>` +
     `<rect width="${ART_W}" height="${ART_H}" fill="url(#bounce)"/>` +
-    // the left edge dissolves into the card's own plum, so the two halves read
-    // as one picture rather than two panels pushed together
-    `<rect width="104" height="${ART_H}" fill="url(#seam)"/>` +
+    /*
+     * The left edge dissolves into the card's own plum, so the two halves read as
+     * one picture rather than two panels pushed together. It is an ellipse, not a
+     * band: a full-height band left a pale stripe across the very top and bottom
+     * of the card, where the ground behind it is darkest.
+     */
+    `<ellipse cx="0" cy="${ART_H / 2}" rx="132" ry="${ART_H * 0.62}" fill="url(#seam)"/>` +
     `</svg>`
   );
 }
 
-/** Exposed for local inspection of the generated artwork. */
-export function debugSvg(config: BouquetConfig) {
-  return bloomSvg(config);
-}
-
-/** Rasterises the card's specimen to PNG bytes, at 2x for retina timelines. */
+/**
+ * Rasterises the card's specimen to PNG bytes.
+ *
+ * Rendered at 1x, which is all the panel needs: satori embeds this as a base64
+ * data URI inside every response, so a 2x render doubled the decoded bytes for
+ * no visible gain at the size the panel is actually drawn.
+ */
 export async function specimenPng(config: BouquetConfig): Promise<Buffer> {
-  return sharp(Buffer.from(bloomSvg(config)), { density: 192 })
-    .resize(ART_W * 2, ART_H * 2)
+  return sharp(Buffer.from(bloomSvg(config)), { density: 96 })
     .png({ compressionLevel: 9, effort: 6 })
     .toBuffer();
 }

@@ -187,6 +187,12 @@ export async function GET(request: Request) {
         </div>
       </div>
     ),
-    { ...size, ...(fonts ? { fonts } : {}) }
+    {
+      ...size,
+      ...(fonts ? { fonts } : {}),
+      // the recipe is in the URL, so a given card never changes: let crawlers
+      // and messengers keep it instead of asking the function again
+      headers: { "cache-control": "public, max-age=31536000, s-maxage=31536000, immutable" },
+    }
   );
 }
