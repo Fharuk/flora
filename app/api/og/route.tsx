@@ -2,50 +2,67 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
-import { decodeBouquet, bouquetTitle } from "@/lib/bouquet";
+import { decodeBouquet, bouquetTitle, type BouquetConfig } from "@/lib/bouquet";
+import { specimenPng } from "@/lib/og-art";
 import { palettes, specimenBySlug } from "@/lib/specimens";
 import { synthSite } from "@/lib/site";
 
 export const runtime = "nodejs";
-export const alt = `${synthSite.name} — ${synthSite.tagline}`;
+export const alt = `${synthSite.name}, ${synthSite.tagline.toLowerCase()}`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-/** Share cards are generated from the same URL state as the scene. */
-/*
- * satori only knows the fonts you hand it, so the card had been falling back to the
- * generic sans while every other surface moved to Cormorant.
+/**
+ * Share cards are generated from the same URL state as the scene.
  *
- * The faces are vendored into assets/fonts rather than read out of node_modules: a
- * node_modules path is not traced into the serverless bundle, and the first attempt at
- * this returned a 500 in production while working perfectly locally.
+ * The card used to be typographic: a title, three specimen names, and the
+ * instrument's Cormorant at 108px. It said nothing about what the site looks
+ * like, and Cormorant is not even the film's face. It is now a split card: the
+ * film's Fraunces on the left, and on the right a specimen drawn by `og-art`
+ * from the bouquet's own numbers, rasterised by sharp and laid in as a PNG.
+ *
+ * The faces are vendored into assets/fonts rather than read out of node_modules:
+ * a node_modules path is not traced into the serverless bundle, and an earlier
+ * attempt at this returned a 500 in production while working locally.
  */
 const FONT_DIR = join(process.cwd(), "assets", "fonts");
 
-async function loadSerif(file: string) {
-  return readFile(join(FONT_DIR, file));
-}
-
-/** A missing face should cost the card its serif, not its whole response. */
-async function optionalSerif() {
+async function optionalFonts() {
   try {
-    const [serif, italic] = await Promise.all([
-      loadSerif("og-serif.woff"),
-      loadSerif("og-serif-italic.woff"),
+    const [serif, wordmark, mono] = await Promise.all([
+      readFile(join(FONT_DIR, "og-fraunces.woff")),
+      readFile(join(FONT_DIR, "og-fraunces-word.woff")),
+      readFile(join(FONT_DIR, "og-geist.woff")),
     ]);
-    return [
-      { name: "Cormorant", data: serif, weight: 500 as const, style: "normal" as const },
-      { name: "Cormorant", data: italic, weight: 400 as const, style: "italic" as const },
+    // satori takes a weight from its own union; these are static instances of
+    // the variable face, so each one declares the weight it was pinned to
+    type Face = { name: string; data: Buffer; weight: 300 | 500 | 600; style: "normal" };
+    const faces: Face[] = [
+      { name: "Fraunces", data: serif, weight: 300, style: "normal" },
+      { name: "Fraunces", data: wordmark, weight: 600, style: "normal" },
+      { name: "Geist", data: mono, weight: 500, style: "normal" },
     ];
+    return faces;
   } catch {
+    // a missing face should cost the card its serif, not its whole response
     return undefined;
   }
 }
 
+/** Several garnets in the film's palette, keyed so each card pulls its own. */
+const GROUNDS = ["#7d1f2f", "#9e2b3e", "#5c1622", "#3f1219"];
+
+function ground(config: BouquetConfig) {
+  return GROUNDS[Math.abs(config.seed) % GROUNDS.length];
+}
+
 export async function GET(request: Request) {
-  const fonts = await optionalSerif();
-  const { searchParams } = new URL(request.url);
-  const config = decodeBouquet(searchParams);
+  const [fonts, art] = await Promise.all([
+    optionalFonts(),
+    specimenPng(decodeBouquet(new URL(request.url).searchParams)).catch(() => null),
+  ]);
+
+  const config = decodeBouquet(new URL(request.url).searchParams);
   const palette = palettes[config.palette];
   const title = bouquetTitle(config);
   const names = config.species
@@ -60,52 +77,113 @@ export async function GET(request: Request) {
           width: "100%",
           height: "100%",
           display: "flex",
-          padding: 64,
-          background: `radial-gradient(120% 120% at 78% 8%, ${palette.swatch[1]} 0%, ${palette.swatch[0]} 58%, #2a1215 100%)`,
-          color: "#2a1215",
-          fontFamily: "Cormorant",
+          background: "#1a0a0f",
+          color: "#fbf4ec",
+          fontFamily: "Fraunces",
         }}
       >
-        <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: "100%" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        {/* the type column */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "space-between",
+            width: 560,
+            padding: "58px 48px 54px 64px",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 13 }}>
             <div
               style={{
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                width: 30,
-                height: 30,
+                width: 28,
+                height: 28,
                 borderRadius: 999,
                 border: "1px solid #a9803f",
               }}
             >
-              <div style={{ width: 11, height: 11, borderRadius: 999, background: "#9e2b3e" }} />
+              <div style={{ width: 10, height: 10, borderRadius: 999, background: "#9e2b3e" }} />
             </div>
-            <div style={{ fontSize: 19, letterSpacing: 7, textTransform: "uppercase" }}>Flora-Synth</div>
+            <div
+              style={{
+                fontFamily: "Fraunces",
+                fontWeight: 600,
+                fontSize: 15,
+                letterSpacing: 6,
+                textTransform: "uppercase",
+                color: "#f3d9d2",
+              }}
+            >
+              FLORA-SYNTH
+            </div>
           </div>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-            <div style={{ fontSize: 108, lineHeight: 0.92, letterSpacing: -1, maxWidth: 860 }}>{title}</div>
-            <div style={{ fontSize: 30, opacity: 0.66, maxWidth: 760, fontStyle: "italic" }}>{names}</div>
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ fontSize: 84, lineHeight: 0.94, letterSpacing: -1.4, maxWidth: 440 }}>{title}</div>
+            <div style={{ display: "flex", fontSize: 25, marginTop: 20, color: "#e7c2bb", maxWidth: 430 }}>
+              {names}
+            </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                marginTop: 30,
+                fontFamily: "Geist",
+                fontSize: 15,
+                letterSpacing: 2.6,
+                textTransform: "uppercase",
+                color: "#c99a93",
+              }}
+            >
+              <div style={{ display: "flex", width: 26, height: 1, background: "#a9803f" }} />
+              <div style={{ display: "flex" }}>Ten specimens, drawn in the browser</div>
+            </div>
           </div>
 
           <div
             style={{
               display: "flex",
               justifyContent: "space-between",
-              borderTop: "1px solid rgba(169,128,63,0.55)",
-              paddingTop: 22,
-              fontSize: 18,
-              letterSpacing: 3,
+              alignItems: "center",
+              borderTop: "1px solid rgba(169,128,63,0.45)",
+              paddingTop: 18,
+              fontFamily: "Geist",
+              fontSize: 14,
+              letterSpacing: 2.4,
               textTransform: "uppercase",
-              opacity: 0.55,
+              color: "#b98d86",
             }}
           >
-            <span>
+            <div style={{ display: "flex" }}>
               {config.density} stems · {config.arrangement} · {palette.name}
-            </span>
-            <span>seed {config.seed.toString(36).toUpperCase()}</span>
+            </div>
+            <div style={{ display: "flex" }}>seed {config.seed.toString(36).toUpperCase()}</div>
           </div>
+        </div>
+
+        {/* the art panel: the specimen, bleeding off three edges */}
+        <div
+          style={{
+            display: "flex",
+            position: "relative",
+            width: 640,
+            height: 630,
+            background: ground(config),
+          }}
+        >
+          {art
+            ? // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={`data:image/png;base64,${art.toString("base64")}`}
+                width={640}
+                height={630}
+                style={{ position: "absolute", left: 0, top: 0 }}
+                alt=""
+              />
+            : null}
         </div>
       </div>
     ),
