@@ -5,6 +5,7 @@ import Lenis from "lenis";
 import { createDirector, type Director } from "@/lib/stamen/director";
 import { cart } from "@/lib/stamen/cart";
 import { live } from "@/lib/stamen/live";
+import { initPreset, presetStore } from "@/lib/stamen/preset";
 import { shutter as shutterBus } from "@/lib/stamen/shutter";
 import { prefersReducedMotion } from "@/lib/stamen/util";
 
@@ -26,9 +27,10 @@ export default function Stage() {
     if (!canvas.current) return;
     const lenis = prefersReducedMotion() ? null : new Lenis({ lerp: 0.08, wheelMultiplier: 0.85, autoRaf: false });
     lenisRef = lenis;
+    initPreset();
     let director: Director | null = null;
     try {
-      director = createDirector({ canvas: canvas.current, lenis });
+      director = createDirector({ canvas: canvas.current, lenis, preset: presetStore.get() });
     } catch (e) {
       console.error("STAMEN: WebGL unavailable", e);
       live.set({ failed: true, ready: true, load: 1 });
@@ -53,5 +55,7 @@ export default function Stage() {
     };
   }, []);
 
-  return <canvas ref={canvas} aria-hidden className="fixed inset-0 z-0 block h-[100lvh] w-screen" style={{ touchAction: "pan-y" }} />;
+  return (
+    <canvas ref={canvas} aria-hidden className="fixed inset-0 z-0 block h-[100lvh] w-screen" style={{ touchAction: "pan-y" }} />
+  );
 }

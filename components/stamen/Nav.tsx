@@ -1,10 +1,73 @@
 "use client";
 
-import { useState } from "react";
-import { Layers, Menu, X } from "lucide-react";
+import { useCallback, useSyncExternalStore, useState } from "react";
+import { Layers, Menu, Sun, X } from "lucide-react";
 import { cart, totals, useCart } from "@/lib/stamen/cart";
+import { PRESETS, presetStore, type LightingPreset } from "@/lib/stamen/preset";
 import { scrollToId } from "./Stage";
 import { Mark } from "./Mark";
+
+/**
+ * The light switch.
+ *
+ * One cycle button rather than a menu of three: the film is played, not
+ * configured, and a viewer who wants a different light should be able to get one
+ * without opening anything. It says the preset it is on, and cycles through them
+ * in the order they depart from the film's design.
+ */
+function LightSwitch() {
+  const [open, setOpen] = useState(false);
+  const preset = useSyncExternalStore(presetStore.subscribe, presetStore.get, presetStore.get);
+  const current = PRESETS.find((p) => p.id === preset) ?? PRESETS[0];
+
+  const choose = useCallback((next: LightingPreset) => {
+    setOpen(false);
+    /*
+     * The director reads its preset once, at build time: changing it mid-film
+     * would mean rebuilding the room. A reload is honest about that and cheap —
+     * the film is scroll-positioned, and the preset is in the URL so the page
+     * opens at the top of the same light.
+     */
+    presetStore.set(next);
+    const url = new URL(window.location.href);
+    if (next === "daylight") url.searchParams.delete("light");
+    else url.searchParams.set("light", next);
+    window.location.replace(url.toString());
+  }, []);
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="stamen-glass flex items-center gap-2 rounded-full px-3 py-2.5 text-[13px] font-medium"
+        aria-label={`Light: ${current.name}`}
+        aria-expanded={open}
+        aria-haspopup="true"
+      >
+        <Sun size={16} />
+        <span className="hidden sm:inline">{current.name}</span>
+      </button>
+      {open ? (
+        <div className="stamen-glass absolute right-0 top-full mt-2 w-[15rem] overflow-hidden rounded-2xl p-1.5">
+          <ul className="text-left">
+            {PRESETS.map((p) => (
+              <li key={p.id}>
+                <button
+                  onClick={() => choose(p.id)}
+                  aria-pressed={p.id === preset}
+                  className="block w-full rounded-xl px-3 py-2 text-left transition-colors hover:bg-[var(--chip)]"
+                >
+                  <span className="block text-[13px] font-medium">{p.name}</span>
+                  <span className="mt-0.5 block text-[11px] leading-snug opacity-60">{p.note}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 const LINKS = [
   { id: "bloom", label: "The film" },
@@ -38,6 +101,7 @@ export default function Nav() {
           ))}
         </nav>
         <div className="flex items-center gap-2">
+          <LightSwitch />
           <button onClick={() => cart.setOpen(true)} className="stamen-glass flex items-center gap-2 rounded-full px-3.5 py-2.5 text-[13px] font-medium" aria-label={`Saved compositions, ${count}`}>
             <Layers size={16} />
             <span className="stamen-mono tabular-nums">{count}</span>

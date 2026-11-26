@@ -52,9 +52,13 @@ interface Mark {
   on: boolean;
 }
 
+/** how the film is lit: the story's own light, a black studio, or a lit sheet of paper */
+export type LightingPreset = "daylight" | "night" | "paper";
+
 export interface DirectorOptions {
   canvas: HTMLCanvasElement;
   lenis?: { raf: (t: number) => void; scrollTo?: (y: number, o: object) => void } | null;
+  preset?: LightingPreset;
 }
 
 /** the time-lapse: day one 07:24 to day three 16:42 across the first chapter */
@@ -85,6 +89,34 @@ export function createDirector(opts: DirectorOptions) {
   const cleanup: (() => void)[] = [];
 
   // ------------------------------------------------------------ the script
+  /*
+   * Lighting presets. The film's light is the story's: the shot at each scroll
+   * position names how much room there is and how much paper, and the clock runs
+   * through a day inside that. A preset is not a second story — it is a grade on
+   * top of the shot, so the film keeps its arc while the set changes under it.
+   *
+   *   daylight   the story as designed: morning wall, then night, then paper
+   *   night      a black studio throughout: no wall, no paper, the key and rim
+   *   paper      the lit wall and the blush ground throughout: the essay's mode
+   *
+   * `light()` below is the only place the preset is allowed to disagree with the
+   * cue sheet, so there is one rule to read rather than hundreds of branches.
+   */
+  const preset: LightingPreset = opts.preset ?? "daylight";
+
+  function grade(s: Shot) {
+    if (preset === "night") {
+      s.room = 0;
+      s.paper = 0;
+    } else if (preset === "paper") {
+      /* the paper chapters are already paper; the wall chapters are lit, so they
+         keep the room and lose the night rather than becoming flat cream */
+      s.paper = 1;
+      s.room = s.room > 0.5 ? 1 : 0;
+    }
+    return s;
+  }
+
   const resolvedDesk: Shot[] = [];
   const resolvedPhone: Shot[] = [];
   {
@@ -430,6 +462,8 @@ export function createDirector(opts: DirectorOptions) {
       const span = Math.max(1, cueAbs[i + 1] - cueAbs[i]);
       blend(list[i], list[i + 1], smoother((playhead - cueAbs[i]) / span), shot);
     }
+    if (preset !== "daylight") grade(shot);
+
     let current = scenes[0]?.id || "bloom";
     for (const s of scenes) if (playhead >= s.top) current = s.id;
     live.set({ scene: current });
@@ -478,7 +512,20 @@ export function createDirector(opts: DirectorOptions) {
      * properly gone, and never flickers back.
      */
     const lit = day.up > 0.12 || (tone === "day" && day.up > 0.06);
-    const nextTone = shot.room > 0.5 ? (lit ? "day" : "night") : shot.paper > 0.5 ? "paper" : "field";
+    const nextTone =
+      preset === "night"
+        ? "night"
+        : preset === "paper"
+          ? shot.paper > 0.5 || shot.room > 0.5
+            ? "day"
+            : "field"
+          : shot.room > 0.5
+            ? lit
+              ? "day"
+              : "night"
+            : shot.paper > 0.5
+              ? "paper"
+              : "field";
     if (nextTone !== tone) {
       tone = nextTone;
       document.documentElement.dataset.stamenTone = tone;
