@@ -4,8 +4,8 @@ import { notFound } from "next/navigation";
 
 import { Header } from "@/components/synth/header";
 import { SynthFooter } from "@/components/synth/notes";
-import { ComposeWith, FORM_LABEL, SpecimenRecord, SpecimenStand } from "@/components/synth/specimen-page";
-import { rarityLabel, specimenRarity, specimens } from "@/lib/specimens";
+import { ComposeWith, SpecimenRecord, SpecimenStand } from "@/components/synth/specimen-page";
+import { FORM_LABEL, rarityLabel, specimenRarity, specimens } from "@/lib/specimens";
 import { synthSite } from "@/lib/site";
 
 /**
@@ -130,7 +130,7 @@ export default async function SpecimenPage({ params }: { params: Promise<{ slug:
           <div className="order-1 lg:order-2">
             <SpecimenStand specimen={spec} />
             <p className="mt-3 font-mono text-[0.5rem] uppercase tracking-[0.22em] text-ink-soft">
-              {FORM_LABEL[spec.form] ?? spec.form} · {spec.finish} · {spec.origin}
+              {FORM_LABEL[spec.form]} · {spec.finish} · {spec.origin}
             </p>
           </div>
         </div>

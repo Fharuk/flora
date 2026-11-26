@@ -1,6 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
+import { FORM_LABEL } from "@/lib/specimens";
 import { ArrowRight, Droplets, Flower2, Leaf, Sun } from "lucide-react";
 import { useRef } from "react";
 
@@ -55,21 +56,11 @@ export function SpecimenStand({ specimen }: { specimen: Specimen }) {
       ) : null}
 
       <p className="pointer-events-none absolute inset-x-0 bottom-0 p-5 font-mono text-[0.55rem] uppercase tracking-[0.2em] text-ink-soft">
-        {FORM_LABEL[specimen.form] ?? specimen.form} · {specimen.finish} · {specimen.bloom}
+        {FORM_LABEL[specimen.form]} · {specimen.finish} · {specimen.bloom}
       </p>
     </div>
   );
 }
-
-/** the form is a code in the record — "spray", "cup", "spathe" — so it gets a label */
-export const FORM_LABEL: Record<string, string> = {
-  spiral: "Spiral",
-  cup: "Cup",
-  spray: "Spray",
-  spike: "Spike",
-  spathe: "Spathe",
-  fan: "Fan",
-};
 
 const FACTS = [
   { icon: Leaf, label: "Family" },

@@ -5,6 +5,22 @@
  */
 
 export type Form = "spiral" | "cup" | "spray" | "spike" | "spathe" | "fan";
+
+/**
+ * The record stores a form as a code ("cup"); the page prints a label ("Cup").
+ * It lives here rather than next to the component that usually renders it
+ * because that component is a client module: a server component that imported
+ * the map from it would receive the client reference, not the object, and every
+ * lookup would quietly fall back to the raw code.
+ */
+export const FORM_LABEL: Record<Form, string> = {
+  spiral: "Spiral",
+  cup: "Cup",
+  spray: "Spray",
+  spike: "Spike",
+  spathe: "Spathe",
+  fan: "Fan",
+};
 export type Finish = "glass" | "chrome" | "porcelain" | "iridescent";
 
 export type Rarity = "common" | "rare" | "exotic" | "legendary" | "mythic";
