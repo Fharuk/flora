@@ -7,6 +7,7 @@ import { BouquetCanvas } from "@/components/three/bouquet-scene";
 import { BouquetTitle, CopyShare, SeedReadout, ShareCard } from "@/components/synth/studio-parts";
 import { AudioToggle } from "@/components/synth/audio-toggle";
 import { SavePanel } from "@/components/synth/garden";
+import { PrintSheet } from "@/components/synth/print-sheet";
 import { ShelfButton } from "@/components/synth/shelf";
 import { InstrumentControls } from "@/components/synth/instrument";
 import { downloadSTL } from "@/lib/print";
@@ -97,6 +98,7 @@ export function Studio() {
               )}
               {printing ? "Building mesh…" : "Download STL"}
             </button>
+            <PrintSheet />
           </div>
 
           <ShareCard />

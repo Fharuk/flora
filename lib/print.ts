@@ -142,6 +142,53 @@ export function bouquetToSTL(config: BouquetConfig): ArrayBuffer {
   return buffer;
 }
 
+/** the print's dimensions in millimetres, measured off the same mesh the STL is built from */
+export type PrintDims = {
+  width: number;
+  height: number;
+  depth: number;
+  triangles: number;
+  /** the thinnest petal wall, in millimetres — the number that decides a nozzle */
+  wall: number;
+  stems: number;
+};
+
+/** The STL's own scale: a bouquet about 240 mm tall prints at a table-friendly size. */
+export const PRINT_SCALE = 20;
+
+export function printDims(config: BouquetConfig): PrintDims {
+  const geos = trianglesFor(config);
+  const box = new THREE.Box3();
+  let triangles = 0;
+  for (const g of geos) {
+    g.computeBoundingBox();
+    if (g.boundingBox) box.union(g.boundingBox);
+    triangles += (g.index ? g.index.count : g.getAttribute("position").count) / 3;
+    g.dispose();
+  }
+  const size = new THREE.Vector3();
+  box.getSize(size);
+
+  /*
+   * The wall is estimated from the specimen's weight, not measured: the petals are
+   * single-surface shells with no thickness in the file, so the honest number is
+   * the thinnest feature the *slicer* will produce, which depends on its own
+   * settings. Quoting a thickness the geometry does not have would be worse than
+   * quoting none, so the sheet says "nominal" wherever this appears.
+   */
+  const spec = getSpecimen(composeBouquet(config)[0]?.species ?? "") ?? null;
+  const wall = spec ? Math.max(0.6, 1.1 / Math.sqrt(spec.weight)) : 0.8;
+
+  return {
+    width: Math.round(size.x * PRINT_SCALE),
+    height: Math.round(size.y * PRINT_SCALE),
+    depth: Math.round(size.z * PRINT_SCALE),
+    triangles: Math.round(triangles),
+    wall: Math.round(wall * 100) / 100,
+    stems: composeBouquet(config).length,
+  };
+}
+
 export function downloadSTL(config: BouquetConfig, filename = "flora-synth-bouquet.stl") {
   const buffer = bouquetToSTL(config);
   const blob = new Blob([buffer], { type: "model/stl" });
