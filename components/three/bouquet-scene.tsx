@@ -360,17 +360,63 @@ function Scene({
 
 /* ------------------------------------------------------------------- the canvas */
 
+/**
+ * Renders one frame at `scale` times the current pixel ratio and returns it as a
+ * data URI, or null if the context refused. Lives inside the Canvas because it
+ * needs the renderer, the camera and the scene; the component outside only holds
+ * the function it registers.
+ */
+function Shutter({
+  register,
+}: {
+  register?: (fn: (() => Promise<string | null>) | null) => void;
+}) {
+  const { gl, scene, camera, size } = useThree();
+  const busy = useRef(false);
+
+  useEffect(() => {
+    if (!register) return;
+    register(async () => {
+      if (busy.current) return null;
+      busy.current = true;
+      const before = gl.getPixelRatio();
+      const beforeSize = { w: size.width, h: size.height };
+      try {
+        // draw at the capture resolution, read immediately, then put the stage back
+        gl.setPixelRatio(Math.min(3, (window.devicePixelRatio || 1) * 2));
+        gl.setSize(beforeSize.w, beforeSize.h, false);
+        gl.render(scene, camera);
+        const url = gl.domElement.toDataURL("image/png");
+        return url && url.length > 500 ? url : null;
+      } catch {
+        return null;
+      } finally {
+        gl.setPixelRatio(before);
+        gl.setSize(beforeSize.w, beforeSize.h, false);
+        gl.render(scene, camera);
+        busy.current = false;
+      }
+    });
+    return () => register(null);
+  }, [gl, scene, camera, size.width, size.height, register]);
+
+  return null;
+}
+
 export function BouquetCanvas({
   config,
   theme,
   className,
   onReady,
+  onCapture,
   compact = false,
 }: {
   config: BouquetConfig;
   theme: Theme;
   className?: string;
   onReady?: () => void;
+  /** hands the parent a function that renders one frame at capture resolution */
+  onCapture?: (fn: (() => Promise<string | null>) | null) => void;
   /** narrow viewport: pull the camera back and lift the bouquet above the hero card */
   compact?: boolean;
 }) {
@@ -378,6 +424,7 @@ export function BouquetCanvas({
   const reduced = useReducedMotion();
   const visible = useDocumentVisible();
   const reveal = useRef(0);
+
   const [quality] = useState<"high" | "low">(() => {
     if (typeof window === "undefined") return "high";
     return window.innerWidth < 820 || (navigator.hardwareConcurrency ?? 4) <= 4 ? "low" : "high";
@@ -438,6 +485,7 @@ export function BouquetCanvas({
           reveal={reveal}
           compact={compact}
         />
+        <Shutter register={onCapture} />
       </Canvas>
     </div>
   );

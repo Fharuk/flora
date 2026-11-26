@@ -1,5 +1,6 @@
 "use client";
 
+import Shutter from "./Shutter";
 import { useLive } from "./useLive";
 
 /**
@@ -28,11 +29,14 @@ export default function Hud() {
         </span>
         <span className="hidden opacity-70 lg:inline">1 frame / 4 min</span>
       </div>
-      <div className="stamen-glass flex items-center gap-3 rounded-full py-1.5 pl-3.5 pr-2 md:gap-4 md:pl-5 md:pr-2.5">
-        <span data-hud="stage">Tight bud</span>
-        <span className="stamen-dial" data-hud="sun">
-          <i />
-        </span>
+      <div className="pointer-events-auto flex items-center gap-2">
+        <Shutter />
+        <div className="stamen-glass flex items-center gap-3 rounded-full py-1.5 pl-3.5 pr-2 md:gap-4 md:pl-5 md:pr-2.5">
+          <span data-hud="stage">Tight bud</span>
+          <span className="stamen-dial" data-hud="sun">
+            <i />
+          </span>
+        </div>
       </div>
     </div>
   );

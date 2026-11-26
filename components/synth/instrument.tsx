@@ -1,10 +1,11 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowDown, Check, Dices, RotateCcw, Share2, Sparkles } from "lucide-react";
+import { ArrowDown, Camera, Check, Dices, Loader2, RotateCcw, Share2, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BouquetCanvas } from "@/components/three/bouquet-scene";
+import { download, stillName } from "@/lib/capture";
 import { getSpecimen } from "@/lib/hybrids";
 import { shareBouquet, type ShareOutcome } from "@/lib/share";
 import { useBouquetMeta, useShareUrl, useSynth } from "@/lib/store";
@@ -33,7 +34,12 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
   const [shareState, setShareState] = useState<ShareOutcome | null>(null);
   const [ready, setReady] = useState(false);
   const [compact, setCompact] = useState(false);
-
+  /* the canvas hands us a function that renders one frame at capture resolution */
+  const shutter = useRef<(() => Promise<string | null>) | null>(null);
+  const capture = useCallback((fn: (() => Promise<string | null>) | null) => {
+    shutter.current = fn;
+  }, []);
+  const [still, setStill] = useState<"idle" | "working" | "saved" | "failed">("idle");
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -59,6 +65,15 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
     window.setTimeout(() => setShareState(null), 2200);
   }, [shareUrl, title, query, theme]);
 
+  const saveStill = useCallback(async () => {
+    if (still === "working") return;
+    setStill("working");
+    const url = shutter.current ? await shutter.current() : null;
+    if (url) download(url, stillName("flora-synth", config.seed));
+    setStill(url ? "saved" : "failed");
+    window.setTimeout(() => setStill("idle"), 2400);
+  }, [still, config.seed]);
+
   return (
     <section id="top" className="relative">
       <div className="relative h-[100svh] min-h-[620px] w-full overflow-hidden bg-scene">
@@ -68,6 +83,7 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
           theme={theme}
           className="absolute inset-0 h-full w-full"
           onReady={() => setReady(true)}
+          onCapture={capture}
           compact={compact}
         />
 
@@ -127,7 +143,29 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
                   Compose
                   <ArrowDown className="h-3 w-3" />
                 </a>
-                {/* an icon-only share keeps all three actions on one line at every width */}
+                {/* a still and a share, icon-only, so four actions stay on one line at every width */}
+                <button
+                  type="button"
+                  onClick={() => void saveStill()}
+                  disabled={still === "working"}
+                  aria-label={
+                    still === "saved"
+                      ? "Still saved"
+                      : still === "failed"
+                        ? "Could not save a still"
+                        : "Save a still of this bouquet"
+                  }
+                  title={still === "saved" ? "Saved" : still === "failed" ? "No still" : "Save a still"}
+                  className="btn btn-ghost !px-3"
+                >
+                  {still === "working" ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : still === "saved" ? (
+                    <Check className="h-3.5 w-3.5 text-[var(--gold-ink)]" />
+                  ) : (
+                    <Camera className="h-3.5 w-3.5" />
+                  )}
+                </button>
                 <button
                   type="button"
                   onClick={share}

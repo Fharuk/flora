@@ -776,11 +776,39 @@ export function createDirector(opts: DirectorOptions) {
     requestAnimationFrame(pre);
   }
 
+  /**
+   * One frame, borrowed, at twice the pixel ratio.
+   *
+   * The context is not created with `preserveDrawingBuffer` — it costs a copy of
+   * the framebuffer every frame to buy something we need once in a while. So the
+   * still is drawn here, synchronously, and read back before the compositor can
+   * clear it, and the stage is put back exactly as it was.
+   */
+  function capture(): string | null {
+    if (!built) return null;
+    const beforeRatio = renderer.getPixelRatio();
+    const beforeSize = renderer.getSize(new THREE.Vector2());
+    try {
+      update(0); // make sure the frame about to be drawn is the current state
+      renderer.setPixelRatio(Math.min(3, beforeRatio * 2));
+      renderer.setSize(beforeSize.x, beforeSize.y, false);
+      renderer.render(scene, camera);
+      const url = renderer.domElement.toDataURL("image/png");
+      return url && url.length > 500 ? url : null;
+    } catch {
+      return null;
+    } finally {
+      renderer.setPixelRatio(beforeRatio);
+      renderer.setSize(beforeSize.x, beforeSize.y, false);
+    }
+  }
+
   return {
     setPick(p: Pick) {
       pick = p;
       applyPick();
     },
+    capture,
     remeasure: measure,
     dispose() {
       disposed = true;

@@ -5,6 +5,7 @@ import Lenis from "lenis";
 import { createDirector, type Director } from "@/lib/stamen/director";
 import { cart } from "@/lib/stamen/cart";
 import { live } from "@/lib/stamen/live";
+import { shutter as shutterBus } from "@/lib/stamen/shutter";
 import { prefersReducedMotion } from "@/lib/stamen/util";
 
 let lenisRef: Lenis | null = null;
@@ -34,6 +35,8 @@ export default function Stage() {
       lenis?.destroy();
       lenisRef = null;
     }
+    if (director) shutterBus.set(director.capture);
+    shutterBus.setCanvas(canvas.current);
     let lastPick = cart.get().pick;
     director?.setPick(lastPick);
     const off = cart.subscribe(() => {
@@ -42,6 +45,8 @@ export default function Stage() {
     });
     return () => {
       off();
+      shutterBus.set(null);
+      shutterBus.setCanvas(null);
       director?.dispose();
       lenis?.destroy();
       lenisRef = null;
