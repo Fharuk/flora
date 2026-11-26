@@ -15,15 +15,21 @@ export async function GET() {
 
   /*
    * The garden is a public wall, so it must not list what was sent privately.
-   * A gift with a PIN is somebody's letter behind a lock; putting its card on a public
-   * page would leak the recipient's name, the sender's name and the message preview to
-   * anyone browsing — and the PIN would be protecting the photographs while the words sat
-   * in the open. Only unsealed, unlocked bouquets are listed.
+   *
+   * A gift carries the recipient's name and a letter written to one person. Put on a
+   * public page, both are readable by anyone browsing, and the PIN would be guarding the
+   * photographs while the words sat in the open — the lock would look like privacy without
+   * being it. Filtering on `pin_hash` alone would not be enough either: an unlocked gift is
+   * still a private letter, so the test is whether the row was sent as a gift at all.
+   *
+   * `recipient` is that test. `status` cannot be one — it defaults to 'sealed' on every row,
+   * gift or not, so filtering on it would have hidden the entire garden. `recipient` is only
+   * set by the gift flow, where it names who the envelope is for.
    */
   const { data, error } = await client
     .from(TABLES.bouquets)
     .select(GARDEN_COLUMNS)
-    .is("pin_hash", null)
+    .is("recipient", null)
     .order("created_at", { ascending: false })
     .limit(LIMIT);
 

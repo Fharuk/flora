@@ -360,12 +360,14 @@ export function SavePanel() {
             * A gift code from here produces a bare bouquet page — the garden's own reveal.
             * The full gift (letter, envelope, photographs, voice, PIN) lives in its own
             * flow, so the studio points at it rather than implying this button is that.
+            * "Send a gift" rather than "send it": the gift flow composes its own bouquet,
+            * so this is a door out of the studio, not a hand-off of the one above it.
             */}
           <a
             href="/send"
             className="mt-2 block text-center font-sans text-[0.58rem] uppercase tracking-[0.22em] opacity-45 transition-opacity hover:opacity-80"
           >
-            Want the envelope, photos and a PIN? Send it as a gift →
+            Want an envelope, photos and a PIN? Send a gift →
           </a>
           {state === "error" ? (
             <p className="font-sans text-[0.55rem] leading-relaxed tracking-[0.2em] opacity-45">

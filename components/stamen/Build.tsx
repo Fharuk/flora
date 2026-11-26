@@ -150,13 +150,20 @@ export default function Build() {
                 * name on it — so the film has to offer that door rather than pretending a
                 * copied recipe is a present. Without this the homepage could compose but
                 * never send, which is the one thing the page exists to do.
+                *
+                * The copy says "a bouquet", not "it". The film composes in its own
+                * vocabulary — size, palette, wrap — and the gift flow composes in the
+                * instrument's, down to palettes whose names share nothing (garnet here,
+                * chrome there). Carrying the pick across would need a translation that does
+                * not exist, and a half-carried bouquet that arrives looking different from
+                * the one that was on screen is worse than starting clean.
                 */}
               <a
                 href="/send"
                 className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ink)] transition-colors hover:border-[var(--ink)]"
               >
                 <Send size={14} aria-hidden />
-                Or send it as a gift
+                Send a bouquet as a gift
               </a>
               <p className="stamen-mono mt-3 text-center text-[10.5px] text-[var(--ink-soft)]">
                 Every stem is drawn in the browser · the link is the whole recipe
