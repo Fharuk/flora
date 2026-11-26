@@ -1,11 +1,12 @@
 "use client";
 
 import { AnimatePresence, motion } from "motion/react";
-import { ArrowDown, Check, Copy, Dices, RotateCcw, Sparkles } from "lucide-react";
+import { ArrowDown, Check, Dices, RotateCcw, Share2, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { BouquetCanvas } from "@/components/three/bouquet-scene";
 import { getSpecimen } from "@/lib/hybrids";
+import { shareBouquet, type ShareOutcome } from "@/lib/share";
 import { useBouquetMeta, useShareUrl, useSynth } from "@/lib/store";
 import {
   arrangements,
@@ -27,11 +28,12 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
   const theme = useSynth((s) => s.theme);
   const generation = useSynth((s) => s.generation);
   const generate = useSynth((s) => s.generate);
-  const { title } = useBouquetMeta();
+  const { title, query } = useBouquetMeta();
   const shareUrl = useShareUrl();
-  const [copied, setCopied] = useState(false);
+  const [shareState, setShareState] = useState<ShareOutcome | null>(null);
   const [ready, setReady] = useState(false);
   const [compact, setCompact] = useState(false);
+
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
@@ -41,15 +43,21 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
     return () => mq.removeEventListener("change", sync);
   }, []);
 
-  const copy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      setCopied(false);
-    }
-  }, [shareUrl]);
+  /*
+   * One control, two behaviours. On a phone this opens the native sheet with the
+   * share card attached; on a desktop, where `navigator.share` does not exist,
+   * it copies the link. The button reports which one actually happened.
+   */
+  const share = useCallback(async () => {
+    const outcome = await shareBouquet({
+      url: shareUrl,
+      title,
+      query: `${query}&theme=${theme}`,
+      text: `${title}, drawn from numbers in Flora-Synth.`,
+    });
+    setShareState(outcome);
+    window.setTimeout(() => setShareState(null), 2200);
+  }, [shareUrl, title, query, theme]);
 
   return (
     <section id="top" className="relative">
@@ -122,15 +130,23 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
                 {/* an icon-only share keeps all three actions on one line at every width */}
                 <button
                   type="button"
-                  onClick={copy}
-                  aria-label={copied ? "Link copied" : "Copy a link to this bouquet"}
-                  title={copied ? "Copied" : "Copy link"}
+                  onClick={share}
+                  aria-label={
+                    shareState === "copied"
+                      ? "Link copied"
+                      : shareState === "shared"
+                        ? "Shared"
+                        : shareState === "failed"
+                          ? "Copy the link from the address bar"
+                          : "Share this bouquet"
+                  }
+                  title={shareState === "copied" ? "Copied" : shareState === "shared" ? "Shared" : "Share"}
                   className="btn btn-ghost !px-3"
                 >
-                  {copied ? (
+                  {shareState === "copied" || shareState === "shared" ? (
                     <Check className="h-3.5 w-3.5 text-[var(--gold-ink)]" />
                   ) : (
-                    <Copy className="h-3.5 w-3.5" />
+                    <Share2 className="h-3.5 w-3.5" />
                   )}
                 </button>
               </div>

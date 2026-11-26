@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import { Check, Link2 } from "lucide-react";
 
+import { shareBouquet, type ShareOutcome } from "@/lib/share";
 import { synthSite } from "@/lib/site";
 import { useBouquetMeta, useShareUrl, useSynth } from "@/lib/store";
 import { specimens } from "@/lib/specimens";
@@ -33,19 +34,22 @@ const notes = [
 export function Notes() {
   const config = useSynth((s) => s.config);
   const shareUrl = useShareUrl();
-  const { title } = useBouquetMeta();
+  const { title, query } = useBouquetMeta();
+  const theme = useSynth((s) => s.theme);
   const seed = useSynth((s) => s.setSeed);
-  const [copied, setCopied] = useState(false);
+  const [state, setState] = useState<ShareOutcome | null>(null);
 
-  const copy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setCopied(false);
-    }
-  }, [shareUrl]);
+  /* native sheet on a phone, clipboard elsewhere — see lib/share.ts */
+  const share = useCallback(async () => {
+    const outcome = await shareBouquet({
+      url: shareUrl,
+      title,
+      query: `${query}&theme=${theme}`,
+      text: `${title}, drawn from numbers in Flora-Synth.`,
+    });
+    setState(outcome);
+    setTimeout(() => setState(null), 1800);
+  }, [shareUrl, title, query, theme]);
 
   return (
     <section id="notes" className="relative border-t border-line px-5 py-16 sm:px-8 sm:py-24">
@@ -87,9 +91,9 @@ export function Notes() {
                     {config.palette}
                   </p>
                 </div>
-                <button type="button" onClick={copy} className="btn btn-primary shrink-0">
-                  {copied ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />}
-                  {copied ? "Link copied" : "Copy link"}
+                <button type="button" onClick={() => void share()} className="btn btn-primary shrink-0">
+                  {state === "shared" || state === "copied" ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />}
+                  {state === "shared" ? "Shared" : state === "copied" ? "Link copied" : state === "failed" ? "Copy the URL" : "Share"}
                 </button>
               </div>
 
