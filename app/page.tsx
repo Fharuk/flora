@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import Stage from "@/components/stamen/Stage";
+import FilmLink from "@/components/stamen/FilmLink";
 import Loader from "@/components/stamen/Loader";
 import Nav from "@/components/stamen/Nav";
 import Hud from "@/components/stamen/Hud";
@@ -50,6 +51,7 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Stage />
+      <FilmLink />
       <Loader />
       <Nav />
       <Hud />

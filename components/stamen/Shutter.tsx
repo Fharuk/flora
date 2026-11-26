@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { Camera, Film, Loader2, Check } from "lucide-react";
+import { Camera, Check, Film, Link2, Loader2 } from "lucide-react";
 
 import { download, stillName, withWordmark } from "@/lib/capture";
 import { shutter } from "@/lib/stamen/shutter";
@@ -21,6 +21,7 @@ export default function Shutter() {
   const [still, setStill] = useState<"idle" | "working" | "done" | "failed">("idle");
   const [clip, setClip] = useState<"idle" | "recording" | "failed">("idle");
   const clipTimer = useRef<number | null>(null);
+  const [link, setLink] = useState<"idle" | "copied" | "failed">("idle");
 
   const saveStill = useCallback(async () => {
     setStill("working");
@@ -86,6 +87,25 @@ export default function Shutter() {
     clipTimer.current = window.setTimeout(() => recorder.stop(), 4000);
   }, []);
 
+  /*
+   * Copy the link to this moment rather than the homepage.
+   *
+   * The writer keeps `chapter` current in the URL as the viewer scrolls, so by the
+   * time they press this the address bar already points at the right place — all
+   * this has to do is report what happened. On a phone the native sheet would be
+   * nicer, but the film is a full-screen canvas and a sheet over it is a jarring
+   * interruption; a quiet "copied" is the right weight here.
+   */
+  const share = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setLink("copied");
+    } catch {
+      setLink("failed");
+    }
+    window.setTimeout(() => setLink("idle"), 2200);
+  }, []);
+
   const busy = still === "working" || clip === "recording";
 
   return (
@@ -105,6 +125,15 @@ export default function Shutter() {
         ) : (
           <Camera className="h-3.5 w-3.5" />
         )}
+      </button>
+      <button
+        type="button"
+        onClick={() => void share()}
+        aria-label={link === "copied" ? "Link copied" : "Copy a link to this moment"}
+        title={link === "copied" ? "Copied" : "Link to this moment"}
+        className="stamen-glass flex h-8 w-8 items-center justify-center rounded-full"
+      >
+        {link === "copied" ? <Check className="h-3.5 w-3.5" /> : <Link2 className="h-3.5 w-3.5" />}
       </button>
       <button
         type="button"
