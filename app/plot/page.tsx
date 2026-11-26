@@ -16,7 +16,7 @@ export default function PlotPage() {
     <>
       <Header />
       <main id="main">
-        <Botany />
+        <Botany headingLevel={1} />
         <SynthFooter />
       </main>
     </>

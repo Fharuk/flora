@@ -410,6 +410,7 @@ export function BouquetCanvas({
   onReady,
   onCapture,
   compact = false,
+  label,
 }: {
   config: BouquetConfig;
   theme: Theme;
@@ -419,6 +420,8 @@ export function BouquetCanvas({
   onCapture?: (fn: (() => Promise<string | null>) | null) => void;
   /** narrow viewport: pull the camera back and lift the bouquet above the hero card */
   compact?: boolean;
+  /** what this drawing is, for anyone who cannot see it */
+  label: string;
 }) {
   const hasWebGL = useWebGLSupport();
   const reduced = useReducedMotion();
@@ -455,7 +458,15 @@ export function BouquetCanvas({
 
   return (
     <div className={className}>
+      {/*
+        * A WebGL canvas is a picture. Without a role and a name it reaches a
+        * screen reader as an anonymous graphic — present, unmentionable, and
+        * indistinguishable from the page furniture. The label is passed in by
+        * whoever knows what is being drawn, because only the caller does.
+      */}
       <Canvas
+        role="img"
+        aria-label={label}
         shadows={quality === "high" ? { type: THREE.PCFShadowMap } : false}
         dpr={[1, quality === "high" ? 1.9 : 1.4]}
         camera={{

@@ -90,7 +90,7 @@ function SplitFlower({ slug, split, theme }: { slug: string; split: number; them
   );
 }
 
-export function Botany() {
+export function Botany({ headingLevel = 2 }: { headingLevel?: 1 | 2 } = {}) {
   const config = useSynth((s) => s.config);
   const theme = useSynth((s) => s.theme);
   const [split, setSplit] = useState(0);
@@ -115,9 +115,15 @@ export function Botany() {
         <div className="flex flex-wrap items-end justify-between gap-6 border-b border-line pb-6">
           <div>
             <p className="eyebrow mb-4">02 — Algorithmic botany</p>
-            <h2 className="display max-w-2xl text-[clamp(2.2rem,4.6vw,3.8rem)]">
-              One geometry. Two <span className="emphasis">truths.</span>
-            </h2>
+            {headingLevel === 1 ? (
+              <h1 className="display max-w-2xl text-[clamp(2.2rem,4.6vw,3.8rem)]">
+                One geometry. Two <span className="emphasis">truths.</span>
+              </h1>
+            ) : (
+              <h2 className="display max-w-2xl text-[clamp(2.2rem,4.6vw,3.8rem)]">
+                One geometry. Two <span className="emphasis">truths.</span>
+              </h2>
+            )}
           </div>
           <p className="max-w-sm text-[0.88rem] leading-relaxed text-ink-soft">
             Left: the mesh as the engine writes it. Right: the same vertices through glass,
@@ -142,6 +148,8 @@ export function Botany() {
         >
           {hasWebGL && inView ? (
             <Canvas
+              role="img"
+              aria-label={`${specimen.name} split down the middle: wireframe on the left, the same mesh rendered in glass on the right.`}
               dpr={[1, 1.6]}
               camera={{ fov: 30, position: [0, 0.5, 3.6] }}
               gl={{ antialias: true, localClippingEnabled: true, alpha: true }}

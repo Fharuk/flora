@@ -44,6 +44,12 @@ export function BouquetThumb({
     <div ref={host} className={className}>
       {hasWebGL && inView ? (
         <Canvas
+          /*
+           * The card already names the composition and its recipe, so the
+           * drawing is the illustration of text that is right there — hidden
+           * from assistive tech rather than read out twice.
+           */
+          aria-hidden
           dpr={[1, 1.5]}
           camera={{ fov: 32, position: [1.4, 2.1, 7.4], near: 0.1, far: 40 }}
           gl={{ antialias: true, alpha: true, powerPreference: "low-power" }}

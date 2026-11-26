@@ -86,6 +86,7 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
           onReady={() => setReady(true)}
           onCapture={capture}
           compact={compact}
+          label="The live bouquet, drawn in 3D. Its species, palette, vessel and opening are all set by the controls below."
         />
 
         <div aria-hidden className="pointer-events-none absolute inset-0 grain" />

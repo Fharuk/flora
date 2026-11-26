@@ -53,6 +53,7 @@ export function GiftExperience({ entry }: { entry: GardenEntry }) {
           config={config}
           theme={theme}
           className="absolute inset-0 h-full w-full"
+          label={`The sealed bouquet, ${entry.title ?? "a composition"}, drawn in 3D.`}
         />
       ) : null}
 

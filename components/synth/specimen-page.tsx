@@ -42,6 +42,8 @@ export function SpecimenStand({ specimen }: { specimen: Specimen }) {
     >
       {hasWebGL && inView ? (
         <Canvas
+          role="img"
+          aria-label={`${specimen.name}, ${specimen.latin}, drawn in 3D inside its case.`}
           dpr={[1, 1.7]}
           camera={{ fov: 30, position: [0, 0.55, 3.9] }}
           gl={{ antialias: true, alpha: true }}

@@ -49,6 +49,7 @@ export function Studio() {
               theme={theme}
               className="absolute inset-0 h-full w-full"
               compact
+              label="The bouquet you are composing, drawn in 3D."
             />
             <div className="pointer-events-none absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-4 md:p-6">
               <BouquetTitle />

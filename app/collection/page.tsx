@@ -16,7 +16,7 @@ export default function CollectionPage() {
     <>
       <Header />
       <main id="main">
-        <Garden />
+        <Garden headingLevel={1} />
         <SynthFooter />
       </main>
     </>

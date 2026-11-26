@@ -143,7 +143,7 @@ function EntryCard({ entry, onOpen }: { entry: GardenEntry; onOpen: () => void }
   );
 }
 
-export function Garden() {
+export function Garden({ headingLevel = 2 }: { headingLevel?: 1 | 2 } = {}) {
   const { entries, enabled, loaded } = useGarden();
   const applyConfig = useSynth((s) => s.applyConfig);
   const track = useRef<HTMLDivElement>(null);
@@ -164,9 +164,15 @@ export function Garden() {
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div>
             <p className="eyebrow">06 — The garden</p>
-            <h2 className="mt-5 text-[clamp(2rem,4.6vw,3.4rem)] leading-[1.02] tracking-[-0.02em]">
-              Everything anyone has <span className="emphasis">made.</span>
-            </h2>
+            {headingLevel === 1 ? (
+              <h1 className="mt-5 text-[clamp(2rem,4.6vw,3.4rem)] leading-[1.02] tracking-[-0.02em]">
+                Everything anyone has <span className="emphasis">made.</span>
+              </h1>
+            ) : (
+              <h2 className="mt-5 text-[clamp(2rem,4.6vw,3.4rem)] leading-[1.02] tracking-[-0.02em]">
+                Everything anyone has <span className="emphasis">made.</span>
+              </h2>
+            )}
           </div>
           <p className="max-w-sm text-[0.9rem] leading-relaxed text-ink-soft">
             Saved compositions are public and permanent. Open one to load it back into the
@@ -314,6 +320,7 @@ export function SavePanel() {
               value={creator}
               onChange={(e) => setCreator(e.target.value)}
               placeholder="Your name"
+              aria-label="Your name, shown on the saved composition"
               maxLength={48}
               className="w-full rounded-lg border border-[color-mix(in_oklab,var(--gold)_32%,transparent)] bg-transparent px-3 py-2.5 font-display text-[0.95rem] outline-none placeholder:italic placeholder:text-ink-soft/70 focus:border-[var(--gold)]"
             />
@@ -321,6 +328,7 @@ export function SavePanel() {
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               placeholder="A dedication, if you like"
+              aria-label="A dedication to go with it"
               maxLength={180}
               className="w-full rounded-lg border border-[color-mix(in_oklab,var(--gold)_32%,transparent)] bg-transparent px-3 py-2.5 font-display text-[0.95rem] outline-none placeholder:italic placeholder:text-ink-soft/70 focus:border-[var(--gold)]"
             />
