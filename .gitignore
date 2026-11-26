@@ -45,3 +45,11 @@ yarn-error.log*
 
 # the licensed Lumette kit archive stays out of the public repo (see THIRD_PARTY.md)
 google_drive/
+
+# One-off browser probes and screenshot scripts written while checking a change.
+# They are never imported by the app and they were never meant to be reviewable
+# code — three of them reached a commit once because `git add -A` does not read
+# intentions. Anything in the repo root starting with a verb is scratch.
+/*.mjs
+!postcss.config.mjs
+!next.config.mjs

@@ -93,12 +93,27 @@ function EntryCard({ entry, onOpen }: { entry: GardenEntry; onOpen: () => void }
       <BouquetThumb
         config={config}
         theme={theme}
-        className="pointer-events-none absolute inset-0 h-full w-full opacity-40 transition-opacity duration-700 group-hover:opacity-60"
+        /*
+         * The card is where the project's claim becomes visible, so the drawing
+         * has to actually be visible: at 40% over the card's own ground it read
+         * as a watermark and the thumbnails may as well have been swatches again.
+         * The type sits above it and the scrim below carries the contrast.
+         */
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-80 transition-opacity duration-700 group-hover:opacity-100"
       />
-      {/* the card's own ground sits over the render, so the type stays readable */}
+      {/*
+        * Two scrims, because the card's text occupies the top and the bouquet the
+        * bottom. The render is bright enough to be visible but a flower head
+        * landing behind "11 stems" made the label unreadable; paper laid over the
+        * top of the card, fading out before the vessel, keeps both legible.
+        */}
       <span
         aria-hidden
-        className="absolute inset-x-0 bottom-0 top-1/3 bg-gradient-to-t from-[var(--paper)] via-[color-mix(in_oklab,var(--paper)_86%,transparent)] to-transparent"
+        className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-[var(--paper)] via-[color-mix(in_oklab,var(--paper)_78%,transparent)] to-transparent"
+      />
+      <span
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-2/3 bg-gradient-to-b from-[color-mix(in_oklab,var(--paper)_94%,transparent)] via-[color-mix(in_oklab,var(--paper)_72%,transparent)] to-transparent"
       />
       <div className="relative flex h-full flex-col">
         <div className="flex items-start justify-between gap-3">
