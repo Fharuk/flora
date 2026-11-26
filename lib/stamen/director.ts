@@ -396,6 +396,8 @@ export function createDirector(opts: DirectorOptions) {
   let frames = 0;
   let fpsT = 0;
   let slow = 0;
+  /** consecutive clean seconds, for giving resolution back */
+  let fast = 0;
   let buildPop = 0;
   const perf = { ms: 0, calls: 0, tris: 0 };
   const lapse = { hours: H0, bloom: 0, scatter: 0, frame: 0, up: 0 };
@@ -445,6 +447,16 @@ export function createDirector(opts: DirectorOptions) {
     perf.ms = perf.ms * 0.94 + (performance.now() - t0) * 0.06;
     perf.calls = renderer.info.render.calls;
     perf.tris = renderer.info.render.triangles;
+    /*
+     * Published for the budget script in scripts/perf.mjs.
+     *
+     * A performance budget nobody can measure is a wish. This is the one number
+     * the film owes its readers — milliseconds of GPU work per frame, draw calls,
+     * triangles, and the pixel ratio the adaptive path has settled on — and it is
+     * cheap to expose: a copy of three numbers, once a frame.
+     */
+    const probe = window as unknown as { __floraPerf?: { ms: number; calls: number; tris: number; dpr: number } };
+    probe.__floraPerf = { ms: perf.ms, calls: perf.calls, tris: perf.tris, dpr };
     adapt(dt);
   }
 
@@ -787,7 +799,16 @@ export function createDirector(opts: DirectorOptions) {
     }
   }
 
-  // keep the frame rate: drop resolution if we're slow
+  /*
+   * Keep the frame rate: drop resolution while we are slow, and give it back
+   * when we are not.
+   *
+   * The old version only ever stepped down, so one bad second — a tab
+   * backgrounded mid-scroll, a thermal dip — permanently cost the film a quarter
+   * of its resolution. Recovery is slower than the fall (twelve clean seconds
+   * against two slow ones) and capped by the same device ceiling the film starts
+   * from, so a slow machine settles low instead of oscillating.
+   */
   function adapt(dt: number) {
     frames++;
     fpsT += dt;
@@ -795,13 +816,31 @@ export function createDirector(opts: DirectorOptions) {
       const fps = frames / fpsT;
       frames = 0;
       fpsT = 0;
-      if (fps < 45) slow++;
-      else slow = Math.max(0, slow - 1);
+      if (fps < 45) {
+        slow++;
+        fast = 0;
+      } else if (fps > 57) {
+        fast++;
+        slow = Math.max(0, slow - 1);
+      } else {
+        slow = Math.max(0, slow - 1);
+        fast = 0;
+      }
+      /* one resolution step down after two slow seconds */
       if (slow >= 2 && dpr > 1) {
         dpr = Math.max(1, dpr - 0.25);
         renderer.setPixelRatio(dpr);
         resize();
         slow = 0;
+        fast = 0;
+        return;
+      }
+      /* and one step back up after twelve clean ones, never past the ceiling */
+      if (fast >= 12 && dpr < dprCap) {
+        dpr = Math.min(dprCap, dpr + 0.25);
+        renderer.setPixelRatio(dpr);
+        resize();
+        fast = 0;
       }
     }
   }

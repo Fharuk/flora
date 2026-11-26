@@ -2,14 +2,16 @@
   "name": "flora-synth",
   "version": "0.1.0",
   "private": true,
-  "description": "Flora-Synth — a botanical instrument. Ten rare specimens rendered as glass and chrome, composed in real time and encoded in the URL.",
+  "description": "Flora-Synth \u2014 a botanical instrument. Ten rare specimens rendered as glass and chrome, composed in real time and encoded in the URL.",
   "scripts": {
     "dev": "next dev --hostname 0.0.0.0",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "skill": "node scripts/find-skill.mjs",
-    "skills": "node scripts/sync-skills.mjs"
+    "skills": "node scripts/sync-skills.mjs",
+    "perf": "node scripts/perf.mjs",
+    "perf:prod": "node scripts/perf.mjs --url https://flora-synth.vercel.app/"
   },
   "dependencies": {
     "@fontsource-variable/fraunces": "^5.3.0",
