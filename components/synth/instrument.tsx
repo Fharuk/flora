@@ -262,7 +262,7 @@ export function InstrumentControls({ bare = false }: { bare?: boolean } = {}) {
             <button
               type="button"
               onClick={() => {
-                setSpecies(["ghost-orchid", "cafe-au-lait-dahlia", "persian-ranunculus"]);
+                setSpecies(["ghost-orchid", "cafe-au-lait-dahlia", "ranunculus"]);
                 generate();
               }}
               className="btn btn-ghost"

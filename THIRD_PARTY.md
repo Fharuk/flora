@@ -28,7 +28,37 @@ Cormorant Garamond, Instrument Serif, Schibsted Grotesk and JetBrains Mono
 (via `@fontsource`), plus Fraunces and Geist for the film (via
 `@fontsource-variable`). All are SIL Open Font License 1.1.
 
+The share cards (`/api/og` and each specimen's `opengraph-image`) cannot reach a
+font server at request time, so Fraunces and Geist are also vendored as three
+subset `.woff` files in `assets/fonts/` — `og-fraunces.woff`,
+`og-fraunces-word.woff` and `og-geist.woff` — read from disk by
+`lib/og-card.tsx`. Same licences.
+
+## Libraries
+
+Installed from npm, not vendored. All MIT unless noted.
+
+| Package | What it does here |
+|---|---|
+| `next`, `react`, `react-dom` | the framework, the app router, the OG image route |
+| `three`, `@react-three/fiber`, `@react-three/drei` | the renderer and the R3F binding for it |
+| `postprocessing`, `@react-three/postprocessing` | bloom, depth of field, aberration, vignette, grain |
+| `motion` | the small UI transitions in the synth surfaces |
+| `lenis` | smooth scrolling for the film's scroll clock |
+| `zustand` | the synthesizer config store and its URL mirroring |
+| `lucide-react` | the icon set |
+| `clsx`, `tailwind-merge` | class composition |
+| `tailwindcss`, `@tailwindcss/postcss` | the design system's utility layer |
+| `@supabase/supabase-js` | the garden — server-side only, and optional |
+
 ## Everything else
 
 Every flower, stem, vessel, wrap, shadow and caustic is generated in the browser
 from code. There are no model, image, video or audio files in this repository.
+
+`skills/` holds vendored reference material from 46 upstream repositories, each
+under its own licence and each carrying its licence file. Nothing in the app
+imports it, and the tree is gitignored.
+
+The frames `/scripts/perf.mjs` measures with are Chromium's; the script drives a
+browser that already exists on the machine rather than shipping one.

@@ -23,16 +23,19 @@ The film owns `/`; the instrument it replaced still runs, unchanged, on its own 
 | Surface | Route | What it does |
 |---|---|---|
 | **The film** | `/` | The front door. Scroll drives one clock: a bouquet opens over three days, sheds its petals, goes under the lens into an anemone's stamens, then steps through all ten specimens and into the composer |
+| **Specimen plates** | `/specimen/[slug]` | One page per plant: its own case, its record, and a door into the composer pre-loaded with it |
 | **Instrument** | `/compose` | The live 3D bouquet you can regenerate, restyle and share |
 | **Algorithmic botany** | `/plot` | The same mesh twice — wireframe vs. physical render, split by a draggable plane |
-| **The studio** | `/studio` | Cross two specimens into a hybrid, listen to the arrangement, export for print |
+| **The studio** | `/studio` | Cross two specimens into a hybrid, listen to the arrangement, export a still, a clip or a printable sheet |
 | **The garden** | `/collection` | Compositions saved as links, public and permanent |
+| **The bench** | `/bench?bench=1` | Not for visitors: the petal-geometry lab (nine petal values plus bloom), 404 in production unless you ask for it by name |
 
 The film is one renderer and one `requestAnimationFrame`: camera moves, the time-lapse,
 the petals, the library rail and every text cue are all written by the same loop in
 `lib/stamen/director.ts`. It never adds a light or toggles shadows at runtime — that
 recompiles every material and the scroll stutters — and it honours a phone's smaller frame
-budget. `?debug` exposes `__stamen.go(chapter, p)`, `__stamen.state()` and `__stamen.perf`.
+budget. `?debug` exposes `__stamen.go(chapter, p)`, `__stamen.state()` and `__stamen.perf`;
+the director also publishes `window.__floraPerf` every frame for the budget script.
 
 Everything is procedural. There are **no GLTF/GLB files, no HDRI maps, no textures on
 disk, and no images of flowers**. Every petal, stem, caustic and reflection is generated
@@ -74,7 +77,7 @@ what separates glass from ceramic on a warm ground, and it is why the vessel no 
 reads as a milky pot. Tokens and ornament classes (`.eyebrow`, `.emphasis`, `.seal`,
 `.frost`, `.btn-primary`) live in `app/globals.css`.
 
-**Hosting: Vercel.** Native for Next.js, edge caching for the static page, and the OG route
+**Hosting: Vercel.** Native for Next.js, edge caching for the static pages, and the OG route
 runs as a serverless function. Netlify would work; Vercel is the shorter path with no
 config.
 
@@ -85,17 +88,29 @@ config.
 ```
 app/
   layout.tsx            fonts, theme boot, URL sync, metadata
-  page.tsx              homepage: hero → instrument → botany → lab → specimens → notes → garden
-  studio/page.tsx       the composer on its own route
+  page.tsx              the film: Stage + chapters + rail, announcements and the essay
+  stamen.css            the film's stylesheet, including the reduced-motion essay
+  globals.css           the synth design system (tokens → components), incl. @media print
+  specimen/[slug]/      one prerendered page per plant + its OG image
+  compose/page.tsx      the instrument on its own route
+  studio/page.tsx       the composer: hybrids, audio, still/clip/sheet export
+  collection/page.tsx   the garden feed
+  plot/page.tsx         the botany split
+  bench/page.tsx        the petal lab, gated out of production
   gift/[code]/page.tsx  the unboxing, rendered from a saved composition
-  globals.css           the whole design system (tokens → components)
+  sitemap.ts            fifteen URLs: the five surfaces and ten plates
   api/og/route.tsx      share cards generated from the bouquet params
   api/garden/route.ts   GET the feed · POST a new composition
   api/garden/[code]/    GET one · POST a view
 components/
-  synth/                UI: header, instrument, botany, lab, vitrine, notes, garden, studio, gift
+  stamen/               the film: Stage, Nav, Hud, Build, Chapters, Care, Loader, Cart,
+                        FilmLink (deep links), Shutter (shutter-speed transitions),
+                        A11y (chapter rail, live announcements, reduced-motion essay)
+  synth/                UI: header, instrument, botany, lab, vitrine, notes, garden,
+                        studio, specimen-page, print-sheet, shelf, bench, gift
   three/
     bouquet-scene.tsx   canvas, lighting, camera, motes, backdrop
+    bouquet-thumb.tsx   the small canvas the garden and the shelf use as a thumbnail
     flowers/
       geometry.ts       parametric petal, tapered tube, merge + growth channels
       build.ts          species → geometry (one merged mesh per species head)
@@ -107,17 +122,31 @@ components/
     effects.tsx         tone map → bloom → DOF → aberration → vignette → grain
     lib/                shared GLSL, capability hooks
 lib/
-  specimens.ts          TEN SPECIES — the botanical data and rarity tiers
+  specimens.ts          TEN SPECIES — the botanical data, the Form union and its labels
   hybrids.ts            the breeding engine + the one specimen resolver
   bouquet.ts            RNG, encode/decode, composition, naming
   audio.ts              generative score (Web Audio, no files)
-  print.ts              bouquet → binary STL
+  print.ts              bouquet → binary STL, and the dimensions the sheet prints
+  capture.ts            still and clip capture off the live canvas
+  share.ts              the share sheet, including the mobile path
+  shelf.ts              the device-local shelf (localStorage, 24 slots)
+  stamen/               the film: director, room, flora, catalog, cues, live, link, preset
   db.ts                 server-only Supabase client, tables, throttles
   garden.ts             the garden's public contract + submission validation
   store.ts              zustand: config + theme, URL mirroring
+scripts/perf.mjs        the frame budget, measured in a real browser
 skills/                 840 vendored agent skills, generated by `npm run skills`
                         and gitignored (see skills/README.md)
 ```
+
+### One rule that bit us: values do not cross the client boundary
+
+A server component may *render* a client component, but it may not *read* a constant out
+of one. Importing `{ FORM_LABEL }` from a `"use client"` module yields the client reference,
+not the object, so the lookup returns `undefined` and the fallback quietly renders the raw
+code — the page looks fine and is wrong. Shared values live in `lib/`, which is why
+`FORM_LABEL` sits beside the `Form` union it describes rather than next to the component
+that usually prints it.
 
 ### The garden, and what it costs
 
@@ -174,35 +203,63 @@ opens. A whole bouquet unfurls for four floats a vertex and no per-frame CPU wor
 ### Performance
 
 - One merged geometry per species, reused by every stem of that species.
-- One canvas for the hero; `IntersectionObserver` gates the botany/vitrine canvases.
-- `dpr` capped at 1.9 desktop / 1.4 mobile; DOF and dust motes drop on low-quality.
-- Render loop pauses on `visibilitychange`; motion respects `prefers-reduced-motion`
-  (which also forces the bouquet to its assembled state instantly).
+- One canvas per surface; `IntersectionObserver` gates the botany/vitrine/thumb canvases.
+- `dpr` capped, and an adaptive path in the director steps resolution **down** when frames
+  run long and back **up** after twelve clean seconds.
+- Render loop pauses on `visibilitychange`; motion respects `prefers-reduced-motion`.
 - No network requests after first paint except font files (self-hosted via Fontsource).
+- The budget is measured, not asserted:
+
+```bash
+npm run perf -- --url http://localhost:3000       # software GL (CI, headless)
+npm run perf:prod                                  # against the deployed site
+```
+
+`scripts/perf.mjs` opens the page in a real browser, reads `window.__floraPerf`, and exits
+non-zero if the film has got slower than it says it is. It checks the 95th-percentile frame
+time after the film settles, the draw calls, the triangles and the settled pixel ratio. The
+triangle ceiling is set from the measured film (~1.37 M, almost all of it anthers — 150
+instanced stamens per head at detail 2) with deliberate small headroom, so it catches a
+regression instead of being permanently red.
+
+### Accessibility
+
+- Skip link, `aria-pressed` on every toggle, `aria-modal` menu with focus management and
+  Escape, semantic headings, and text alternatives for each canvas region.
+- The film carries a fixed six-chapter rail with `aria-current="location"`, and a polite
+  live region announces each chapter as it arrives.
+- Under `prefers-reduced-motion: reduce` the film does not merely stop animating: the pinned
+  scroll narrative is replaced by a static essay — the same six chapters as prose, with the
+  rail and the film's chrome hidden.
+- WebGL absence degrades to the styled fallback rather than a blank box.
+- Hydration is deterministic: the share link is empty on the server and filled on mount.
 
 ---
 
 ## The ten specimens
 
 Chosen for silhouette, rarity, and how they behave under refraction. Each is described in
-`lib/specimens.ts` as a form + finish + petal recipe + palette.
+`lib/specimens.ts` as a form + finish + petal recipe + palette + weight.
 
 | # | Specimen | Latin | Form | Finish |
 |---|---|---|---|---|
 | 01 | Ghost Orchid | *Dendrophylax lindenii* | spray | iridescent |
 | 02 | King Protea | *Protea cynaroides* | cup | porcelain |
-| 03 | Gloriosa Lily | *Gloriosa superba* | spike | glass |
-| 04 | Bird of Paradise | *Strelitzia reginae* | fan | chrome |
-| 05 | Black Hellebore | *Helleborus niger* | cup | porcelain |
-| 06 | Cymbidium Orchid | *Cymbidium goeringii* | spray | glass |
+| 03 | Peony | *Paeonia lactiflora* | spiral | porcelain |
+| 04 | Garden rose | *Rosa × hybrida* | cup | porcelain |
+| 05 | Tulip | *Tulipa gesneriana* | cup | glass |
+| 06 | Anemone | *Anemone coronaria* | cup | porcelain |
 | 07 | Café au Lait Dahlia | *Dahlia* 'Café au Lait' | spiral | porcelain |
-| 08 | Corpse Flower | *Amorphophallus titanum* | spathe | iridescent |
-| 09 | Persian Ranunculus | *Ranunculus asiaticus* | spiral | glass |
+| 08 | Cosmos | *Cosmos bipinnatus* | fan | glass |
+| 09 | Ranunculus | *Ranunculus asiaticus* | spiral | glass |
 | 10 | Velvet Anthurium | *Anthurium crystallinum* | spathe | iridescent |
 
+Each is addressable at `/specimen/<slug>`, and each slug has a two-letter code
+(`SPECIES_CODE` in `lib/specimens.ts`) that is what actually travels in a share link.
+
 Species forms map to builders in `components/three/flowers/build.ts`:
-`spiral` (dahlia, ranunculus), `cup` (protea, hellebore), `spray` (orchids),
-`spike` (gloriosa), `spathe` (arum, anthurium), `fan` (bird of paradise).
+`spiral` (peony, dahlia, ranunculus), `cup` (protea, rose, tulip, anemone),
+`spray` (ghost orchid), `fan` (cosmos), `spathe` (anthurium).
 
 ---
 
@@ -210,42 +267,57 @@ Species forms map to builders in `components/three/flowers/build.ts`:
 
 Two complete themes, not a dark filter. `data-theme` on `<html>` swaps six CSS variables,
 and the 3D scene independently swaps its backdrop gradient, environment intensity, light
-colours, bloom threshold and vignette. Toggle from the header, or pass `?theme=dark`.
+colours, bloom threshold and vignette. Toggle from either header, or pass `?theme=dark`.
+The choice sticks: it is written to `localStorage` before first paint, so there is no flash
+of the wrong theme.
+
+---
+
+## Sharing, exporting, keeping
+
+- **Share a bouquet** — the URL is the whole recipe. On a phone the share sheet is used
+  when the browser has one; the link is copied otherwise.
+- **A still, a clip** — the studio captures the live canvas: a PNG at the current frame, or
+  a short clip through the opening. The canvas is never tainted, so this needs no server.
+- **A sheet to print** — `lib/print.ts` measures the bouquet's real bounding box in
+  millimetres and the sheet lays out the OG card, the six dimensions, the recipe and a
+  footer on A4. It is portalled into `<body>` and hidden on screen; print CSS shows only it.
+- **STL** — the same geometry as binary STL, for anything that will slice it.
+- **Keep it** — the shelf is device-local (`localStorage`, 24 slots) and public saving is
+  the garden. They are different promises and are labelled differently.
 
 ---
 
 ## Interaction inventory
 
 - **Regenerate** — new seed, same species (deterministic mulberry32).
+- **Curator's choice** — three specimens picked for silhouette.
 - **Drag a specimen** from the draggable chip row into the dashed vase → it is added and
   the bouquet regenerates around it.
 - **Click a chip** → append that species.
 - **Palette / arrangement / vessel / density / opening** — every control is live.
+- **The bench** — nine petal numbers and the bloom, scrubbed live, with a copyable recipe
+  (`?f=<slug>&petal=<nine values>`) that reopens the exact flower.
 - **Orbit** the bouquet (drag), **zoom** (wheel/pinch). Auto-rotates when idle.
 - **Botany split** — drag anywhere on the plate to move the clipping plane.
 - **Vitrine** — hover or click an entry to swap the subject; add it to the bouquet.
-- **Share** — copies the URL. The URL is the save file.
-
----
-
-## Accessibility & robustness
-
-- Skip link, `aria-pressed` on every toggle, `aria-modal` menu with focus management and
-  Escape, semantic headings, and text alternatives for each canvas region.
-- Full `prefers-reduced-motion` support.
-- WebGL absence degrades to the styled fallback rather than a blank box.
-- Hydration is deterministic: the share link is empty on the server and filled on mount.
+- **The film** — scroll to run the clock; the rail jumps between chapters; `?chapter=`,
+  `?bloom=` and `?stem=` make a position a link.
 
 ---
 
 ## Known limits
 
 - `transmission` + `dispersion` is the most expensive path in three.js. On a low-end phone
-  the scene still runs, but the vitrine and botany canvases fall back to lower DPR.
+  the scene still runs, but the vitrine, botany and thumbnail canvases fall back to lower
+  DPR.
 - Blooms are stylised, not botanically exact. The recipes are tuned for silhouette at
   small scale; a real specimen has far more asymmetry than six numbers can express.
-- No export to PNG/video yet — the canvas is not tainted, so a `toBlob()` button is a
-  small addition if you want it.
+- The print sheet's wall thickness is **nominal**: petals are single-surface shells, so the
+  number describes the species' weight class rather than a measured solid. It is labelled
+  as such on the sheet.
+- The bench is a development surface. It is gated behind `?bench=1` in production and is
+  `noindex`.
 
 ---
 

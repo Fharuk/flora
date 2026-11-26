@@ -6,7 +6,7 @@ import { mergeGeometries } from "three/examples/jsm/utils/BufferGeometryUtils.js
  *
  * One function covers every species in the garden: the outline is a width profile along
  * `u`, and `cup` / `curl` / `twist` bend that outline in three independent directions, so a
- * ranunculus and a gloriosa lily come out of the same six numbers.
+ * ranunculus and a tulip come out of the same six numbers.
  */
 
 export type PetalShape = "round" | "pointed" | "heart" | "blade" | "teardrop";
