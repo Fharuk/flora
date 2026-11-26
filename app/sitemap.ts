@@ -14,6 +14,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: synthSite.url, lastModified, changeFrequency: "monthly", priority: 1 },
     { url: `${synthSite.url}/compose`, lastModified, changeFrequency: "monthly", priority: 0.8 },
     { url: `${synthSite.url}/studio`, lastModified, changeFrequency: "monthly", priority: 0.7 },
+    /* the gift flow: the one route with a commercial intent behind it */
+    { url: `${synthSite.url}/send`, lastModified, changeFrequency: "weekly", priority: 0.9 },
     { url: `${synthSite.url}/collection`, lastModified, changeFrequency: "weekly", priority: 0.6 },
     { url: `${synthSite.url}/plot`, lastModified, changeFrequency: "yearly", priority: 0.5 },
     /* one page per specimen: eleven entry points into the collection, not one */

@@ -205,6 +205,34 @@ export function stemMaterial(): THREE.MeshPhysicalMaterial {
   });
 }
 
+/**
+ * Greenery.
+ *
+ * Deliberately the least expensive material in the scene: no transmission, high
+ * roughness, a little sheen on the edge. Greenery exists to be matte — if the leaves
+ * were glass too, the bouquet would lose the contrast that makes the blooms read as
+ * crystal at all. The one luxury it keeps is a faint waxy clearcoat, because a real
+ * leaf does catch the key light along its rim.
+ */
+export function foliageMaterial(theme: Theme): THREE.MeshPhysicalMaterial {
+  return new THREE.MeshPhysicalMaterial({
+    vertexColors: true,
+    side: THREE.DoubleSide,
+    color: new THREE.Color("#ffffff"),
+    metalness: 0,
+    roughness: theme === "dark" ? 0.72 : 0.62,
+    transmission: 0,
+    clearcoat: 0.35,
+    clearcoatRoughness: 0.5,
+    sheen: 0.5,
+    sheenColor: new THREE.Color(theme === "dark" ? "#cfd8c2" : "#eaf0e2"),
+    sheenRoughness: 0.75,
+    normalMap: noiseNormalMap(),
+    normalScale: new THREE.Vector2(0.45, 0.45),
+    envMapIntensity: theme === "dark" ? 0.55 : 0.75,
+  });
+}
+
 /** Core / stamen: emissive enough to read as pollen in a dark scene. */
 export function coreMaterial(palette: Palette, theme: Theme): THREE.MeshPhysicalMaterial {
   return new THREE.MeshPhysicalMaterial({

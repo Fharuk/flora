@@ -355,3 +355,66 @@ export const vessels: { key: Vessel; name: string; description: string }[] = [
   { key: "flute", name: "Flute", description: "Tall neck, narrow opening" },
   { key: "tide", name: "Tide", description: "Low, wide, ceremonial bowl" },
 ];
+
+/**
+ * Greenery.
+ *
+ * Declared here beside the other bouquet axes so the config codec, the store and the
+ * geometry all share one list. The recipes that turn a key into leaves live in
+ * `lib/foliage.ts`; this is only the vocabulary.
+ */
+export type FoliageKey = "none" | "sage" | "eucalyptus" | "ruscus" | "fern" | "gypsophila";
+
+export const foliageKeys: FoliageKey[] = ["none", "sage", "eucalyptus", "ruscus", "fern", "gypsophila"];
+
+/**
+ * Music.
+ *
+ * Flora has no audio files: the score is synthesised from the bouquet's own numbers.
+ * A register is the set of choices that decides *how* it is synthesised — mode, tempo,
+ * timbre family and space. Four of them, so a sender can pick a mood without the site
+ * ever shipping a licensed track.
+ */
+export type RegisterKey = "silence" | "glass" | "strings" | "nocturne" | "chamber";
+
+export const registerKeys: RegisterKey[] = ["silence", "glass", "strings", "nocturne", "chamber"];
+
+export const registers: {
+  key: RegisterKey;
+  name: string;
+  description: string;
+  /** one line of card-shaped copy */
+  note: string;
+}[] = [
+  {
+    key: "silence",
+    name: "Silence",
+    description: "No score. The bouquet and the letter alone.",
+    note: "Nothing but their own room.",
+  },
+  {
+    key: "glass",
+    name: "Struck Glass",
+    description: "Inharmonic, bright, long decay — the sound the specimens would make.",
+    note: "Small bells, struck and left to ring.",
+  },
+  {
+    key: "strings",
+    name: "Strings",
+    description: "Bowed, slow-attack, a warm low register held under the melody.",
+    note: "A held chord that keeps its breath.",
+  },
+  {
+    key: "nocturne",
+    name: "Nocturne",
+    description: "Low, sparse, widely spaced notes with long silences between them.",
+    note: "For reading a letter slowly.",
+  },
+  {
+    key: "chamber",
+    name: "Chamber",
+    description: "Two voices in counterpoint, closer together, more movement.",
+    note: "Something played for the two of you.",
+  },
+];
+

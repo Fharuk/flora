@@ -12,10 +12,14 @@ import {
   CODE_SPECIES,
   SPECIES_CODE,
   arrangements,
+  foliageKeys,
   paletteKeys,
+  registerKeys,
   specimens,
   type Arrangement,
+  type FoliageKey,
   type PaletteKey,
+  type RegisterKey,
   type Vessel,
 } from "./specimens";
 
@@ -29,6 +33,13 @@ export type BouquetConfig = {
   density: number;
   /** 0–1, how far the flowers have opened */
   bloom: number;
+  /**
+   * Greenery, chosen in its own step. Absent in every link composed before the
+   * gift flow existed, which is why it decodes to "none".
+   */
+  foliage: FoliageKey;
+  /** How the generative score is voiced. Absent in older links, defaults to glass. */
+  register: RegisterKey;
 };
 
 export type Stem = {
@@ -58,6 +69,8 @@ export const DEFAULT_CONFIG: BouquetConfig = {
   arrangement: "spiral",
   vessel: "bulb",
   bloom: 0.86,
+  foliage: "eucalyptus",
+  register: "glass",
 };
 
 /* ------------------------------------------------------------------- random */
@@ -93,6 +106,20 @@ const CODE_VESSEL = Object.fromEntries(Object.entries(VESSEL_CODE).map(([k, v]) 
   Vessel
 >;
 
+/*
+ * Two axes join the recipe for the gift flow. Both are appended to the query and both are
+ * optional on read, so every link composed before this shipped still decodes to exactly
+ * the bouquet it always did — a default, not a migration.
+ */
+const FOLIAGE_CODE = { none: "0", sage: "s", eucalyptus: "e", ruscus: "r", fern: "n", gypsophila: "g" } as const;
+const CODE_FOLIAGE = Object.fromEntries(
+  Object.entries(FOLIAGE_CODE).map(([k, v]) => [v, k])
+) as Record<string, FoliageKey>;
+const REGISTER_CODE = { silence: "0", glass: "g", strings: "s", nocturne: "n", chamber: "c" } as const;
+const CODE_REGISTER = Object.fromEntries(
+  Object.entries(REGISTER_CODE).map(([k, v]) => [v, k])
+) as Record<string, RegisterKey>;
+
 export function encodeBouquet(config: BouquetConfig): string {
   const params = new URLSearchParams();
   params.set("seed", config.seed.toString(36));
@@ -102,6 +129,13 @@ export function encodeBouquet(config: BouquetConfig): string {
   params.set("v", VESSEL_CODE[config.vessel] ?? "b");
   params.set("d", String(config.density));
   params.set("b", String(Math.round(config.bloom * 100)));
+  // only written when they are not the default: a plain link stays short
+  if (config.foliage && config.foliage !== DEFAULT_CONFIG.foliage) {
+    params.set("g", FOLIAGE_CODE[config.foliage] ?? "0");
+  }
+  if (config.register && config.register !== DEFAULT_CONFIG.register) {
+    params.set("m", REGISTER_CODE[config.register] ?? "g");
+  }
   return params.toString();
 }
 
@@ -126,7 +160,17 @@ export function decodeBouquet(input: string | URLSearchParams): BouquetConfig {
   const bloomRaw = parseFloat(params.get("b") ?? "");
   const bloom = Number.isFinite(bloomRaw) ? Math.min(1, Math.max(0.15, bloomRaw / 100)) : DEFAULT_CONFIG.bloom;
 
-  return { seed, species, palette, arrangement, vessel, density, bloom };
+  const foliageRaw = params.get("g");
+  const foliage: FoliageKey = foliageRaw === null
+    ? DEFAULT_CONFIG.foliage
+    : (CODE_FOLIAGE[foliageRaw] ?? DEFAULT_CONFIG.foliage);
+
+  const registerRaw = params.get("m");
+  const register: RegisterKey = registerRaw === null
+    ? DEFAULT_CONFIG.register
+    : (CODE_REGISTER[registerRaw] ?? DEFAULT_CONFIG.register);
+
+  return { seed, species, palette, arrangement, vessel, density, bloom, foliage, register };
 }
 
 const clampInt = (v: number, min: number, max: number) => Math.min(max, Math.max(min, Math.round(v)));
@@ -247,5 +291,5 @@ export function bouquetCode(config: BouquetConfig): string {
   return `${config.vessel.slice(0, 1).toUpperCase()}${config.seed.toString(36).toUpperCase().slice(0, 5)}`;
 }
 
-export type { Arrangement, PaletteKey, Vessel };
-export { specimens, arrangements, palettes as paletteList, paletteKeys } from "./specimens";
+export type { Arrangement, FoliageKey, PaletteKey, RegisterKey, Vessel };
+export { specimens, arrangements, palettes as paletteList, paletteKeys, foliageKeys, registerKeys } from "./specimens";

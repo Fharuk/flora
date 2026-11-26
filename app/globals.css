@@ -28,6 +28,9 @@
 
   /* — the two signature metals. Garnet is "love"; gold is "luxury". */
   --accent: #9e2b3e;
+  /* — error only. Given its own token so a message never inherits the accent, which
+       would make a failure look like part of the design. */
+  --danger: #96202f;
   --accent-soft: #c2606f;
   --gold: #a9803f;
   --gold-soft: #d3b483;
@@ -70,6 +73,8 @@
 
   --accent: #e4899b;
   --accent-soft: #f0b3bd;
+  /* lifted for a dark ground: the light-theme red is unreadable on velvet */
+  --danger: #f193a0;
   --gold: #d9b87a;
   --gold-soft: #e8cf9f;
   --gold-ink: #e0bf85;

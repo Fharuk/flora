@@ -13,9 +13,17 @@ export async function GET() {
     return NextResponse.json<GardenList>({ entries: [], enabled: false });
   }
 
+  /*
+   * The garden is a public wall, so it must not list what was sent privately.
+   * A gift with a PIN is somebody's letter behind a lock; putting its card on a public
+   * page would leak the recipient's name, the sender's name and the message preview to
+   * anyone browsing — and the PIN would be protecting the photographs while the words sat
+   * in the open. Only unsealed, unlocked bouquets are listed.
+   */
   const { data, error } = await client
     .from(TABLES.bouquets)
     .select(GARDEN_COLUMNS)
+    .is("pin_hash", null)
     .order("created_at", { ascending: false })
     .limit(LIMIT);
 

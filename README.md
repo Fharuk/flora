@@ -97,20 +97,29 @@ app/
   collection/page.tsx   the garden feed
   plot/page.tsx         the botany split
   bench/page.tsx        the petal lab, gated out of production
-  gift/[code]/page.tsx  the unboxing, rendered from a saved composition
+  send/page.tsx         the gift flow: five steps from flowers to a sealed envelope
+  gift/[code]/page.tsx  the recipient's page: an envelope, a letter, and what was attached
   sitemap.ts            fifteen URLs: the five surfaces and ten plates
   api/og/route.tsx      share cards generated from the bouquet params
   api/garden/route.ts   GET the feed · POST a new composition
   api/garden/[code]/    GET one · POST a view
+  api/gift/route.ts     POST create (returns code + one-time owner key) · GET · DELETE
+  api/gift/[code]/unlock  POST a PIN, receive signed media URLs
+  api/gift/[code]/media   POST a photograph or a voice · DELETE one
+  api/gift/[code]/qr       an SVG QR code, drawn locally
 components/
   stamen/               the film: Stage, Nav, Hud, Build, Chapters, Care, Loader, Cart,
                         FilmLink (deep links), Shutter (shutter-speed transitions),
                         A11y (chapter rail, live announcements, reduced-motion essay)
   synth/                UI: header, instrument, botany, lab, vitrine, notes, garden,
-                        studio, specimen-page, print-sheet, shelf, bench, gift
+                        studio, specimen-page, print-sheet, shelf, bench, gift,
+                        envelope (the seal, the flap, the ruled letter paper)
+  send/                 the gift flow: flow, step rail, flowers, greenery, arrange,
+                        card, photos, voice-note, send
   three/
     bouquet-scene.tsx   canvas, lighting, camera, motes, backdrop
     bouquet-thumb.tsx   the small canvas the garden and the shelf use as a thumbnail
+    foliage.ts          greenery → geometry, one merged buffer per spray set
     flowers/
       geometry.ts       parametric petal, tapered tube, merge + growth channels
       build.ts          species → geometry (one merged mesh per species head)
@@ -175,8 +184,14 @@ Schema lives in the `flora_*` tables, namespaced so the project can host other p
 
 ```sql
 flora_bouquets (code, config, title, species[], palette, arrangement, vessel,
-                density, bloom, seed, creator, message, views, created_at)
+                density, bloom, seed, creator, message, views, created_at,
+                recipient, register, pin_hash, owner_hash, photos jsonb, voice jsonb,
+                video jsonb, status, attempts)
 ```
+
+The gift columns are additive and nullable, so every row written before the gift flow
+existed still reads. A private bucket, `flora-gifts`, holds photographs and voice notes;
+nothing in it is readable without a signed URL, and those are only minted after the PIN.
 
 ### Living growth
 
@@ -285,6 +300,39 @@ of the wrong theme.
 - **STL** — the same geometry as binary STL, for anything that will slice it.
 - **Keep it** — the shelf is device-local (`localStorage`, 24 slots) and public saving is
   the garden. They are different promises and are labelled differently.
+
+## Sending a gift
+
+`/send` is five steps — flowers, greenery, arrangement, card, send — and it produces
+something the garden cannot: an envelope with a name on it.
+
+- **Greenery is a step of its own.** Five generated archetypes (sage, eucalyptus, ruscus,
+  fern, baby's breath), each with its own leaf shape, posture, spacing and colour. It is
+  not a backdrop image: the leaves are lit by the same key light, carry vertex colours,
+  and change with the seed. Greenery is deliberately the most matte material in the scene —
+  if the leaves were glass too, the blooms would stop reading as crystal.
+- **Music is four registers, not four tracks.** The site has no audio files. A register
+  changes how the same bouquet is voiced: which modes, how wide the intervals, how long
+  each note rings, how slow the attack, how much silence between notes, and whether a
+  second voice answers. The seed still decides the melody, so two gifts in the same
+  register differ.
+- **The envelope opens.** Four pieces of paper — back, letter, pocket, flap — with the flap
+  on a real hinge and the letter rising out of it. The 3D bouquet mounts only after the
+  seal is broken, so the Living Growth animation is the reveal rather than a page load.
+- **Privacy without accounts.** A four-to-six-digit PIN is stored as a salted scrypt hash.
+  Photographs and the voice note live in a private bucket and are served as one-hour signed
+  URLs, issued only after a correct PIN. Eight wrong attempts lock the row; a separate
+  per-caller throttle stops one client walking the keyspace.
+- **The sender keeps a key, once.** There is no sign-in, so creation returns a 32-byte
+  owner key, stored only as its SHA-256. It is shown a single time and is the only way to
+  edit or delete what you sent. Lose it and the gift still works — you just cannot change it.
+- **Five photographs, resized in the browser** before they are sent (1800 px long edge,
+  re-encoded, EXIF dropped), because the upload goes through a serverless function and a
+  phone photo does not fit in one.
+- **One video, by link.** Nothing is hosted or proxied; the embed is click-to-load and uses
+  `youtube-nocookie`, so opening a gift leaks nothing to Google before the recipient asks.
+- **A QR code drawn on our own server.** Sent to a third-party QR service, a gift link —
+  which is the whole secret — would be logged by somebody else.
 
 ---
 

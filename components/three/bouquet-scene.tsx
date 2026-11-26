@@ -6,14 +6,16 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 
 import { composeBouquet, vesselProfile, type BouquetConfig } from "@/lib/bouquet";
+import { composeFoliage, getFoliage } from "@/lib/foliage";
 import { getSpecimen } from "@/lib/hybrids";
 import { palettes, type Palette } from "@/lib/specimens";
 
 import { Effects } from "./effects";
+import { buildFoliage } from "./foliage";
 import { buildFlower, buildStem, speciesBloom } from "./flowers/build";
 import { Ground } from "./ground";
 import { StudioEnvironment } from "./studio-environment";
-import { coreMaterial, flowerMaterial, setGrowth, stemMaterial, type Theme } from "./materials";
+import { coreMaterial, flowerMaterial, foliageMaterial, setGrowth, stemMaterial, type Theme } from "./materials";
 import { Vessel } from "./vessel";
 import { useDocumentVisible, useReducedMotion, useWebGLSupport } from "./lib/use-capabilities";
 
@@ -251,6 +253,68 @@ function StemInstance({
   );
 }
 
+/* -------------------------------------------------------------------- foliage */
+
+/**
+ * The greenery, drawn behind the blooms.
+ *
+ * It rises with the same reveal as the stems but arrives *first* and settles lower: the
+ * leaves are the bed the flowers are laid on, so seeing them come up ahead of the petals
+ * is what makes the composition read as assembled rather than switched on.
+ */
+function FoliageLayer({
+  config,
+  palette,
+  theme,
+  reveal,
+}: {
+  config: BouquetConfig;
+  palette: Palette;
+  theme: Theme;
+  reveal: React.RefObject<number>;
+}) {
+  const group = useRef<THREE.Group>(null);
+
+  const archetype = useMemo(() => getFoliage(config.foliage), [config.foliage]);
+
+  const built = useMemo(() => {
+    if (!archetype) return null;
+    const sprays = composeFoliage(config);
+    return buildFoliage(sprays, archetype, config.seed);
+  }, [archetype, config]);
+
+  const leafMat = useMemo(() => (archetype ? foliageMaterial(theme) : null), [archetype, theme]);
+  const stalkMat = useMemo(() => (archetype ? stemMaterial() : null), [archetype]);
+
+  useEffect(() => {
+    return () => {
+      built?.stems.dispose();
+      built?.leaves.dispose();
+      leafMat?.dispose();
+      stalkMat?.dispose();
+    };
+  }, [built, leafMat, stalkMat]);
+
+  useFrame(() => {
+    if (!group.current) return;
+    const p = reveal.current ?? 0;
+    // greenery leads the flowers by a beat, and settles a fraction lower
+    const eased = 1 - Math.pow(1 - Math.min(1, Math.max(0, p / 0.72)), 3);
+    group.current.position.y = -(1 - eased) * 0.55;
+    group.current.scale.setScalar(0.55 + eased * 0.45);
+  });
+
+  if (!built || !leafMat || !stalkMat) return null;
+
+  return (
+    <group ref={group}>
+      {/* foliage stalks share the flower stems' waxy material, so the greens cohere */}
+      <mesh geometry={built.stems} material={stalkMat} />
+      <mesh geometry={built.leaves} material={leafMat} castShadow={false} />
+    </group>
+  );
+}
+
 /* -------------------------------------------------------------------- lighting */
 
 function Lights({ theme, palette }: { theme: Theme; palette: Palette }) {
@@ -318,6 +382,8 @@ function Scene({
       {theme === "dark" ? <Motes theme={theme} animated={animated} /> : null}
 
       <group scale={1} position={[0, 0, 0]}>
+        {/* greenery first: it is behind the blooms, and sorts under them */}
+        <FoliageLayer config={config} palette={palette} theme={theme} reveal={reveal} />
         <Vessel vessel={config.vessel} palette={palette} theme={theme} />
         {stems.map((stem) => {
           const spec = getSpecimen(stem.species);

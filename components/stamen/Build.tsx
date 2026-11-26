@@ -10,7 +10,7 @@
 // visible change rather than a number going up.
 
 import { useState } from "react";
-import { Check, Link2 } from "lucide-react";
+import { Check, Link2, Send } from "lucide-react";
 import { PALETTES, SIZES, WRAPS } from "@/lib/stamen/catalog";
 import { cart, stemCount, useCart } from "@/lib/stamen/cart";
 import { Beat } from "./Chapters";
@@ -144,6 +144,20 @@ export default function Build() {
                 </span>
                 <span className="stamen-mono">{pick.size}</span>
               </button>
+              {/*
+                * The link above recreates a *composition*, which is what the studio is for.
+                * A gift is a different object — a sealed envelope with a letter, a PIN and a
+                * name on it — so the film has to offer that door rather than pretending a
+                * copied recipe is a present. Without this the homepage could compose but
+                * never send, which is the one thing the page exists to do.
+                */}
+              <a
+                href="/send"
+                className="mt-3 flex w-full items-center justify-center gap-2 rounded-full border border-[var(--line)] px-5 py-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-[var(--ink)] transition-colors hover:border-[var(--ink)]"
+              >
+                <Send size={14} aria-hidden />
+                Or send it as a gift
+              </a>
               <p className="stamen-mono mt-3 text-center text-[10.5px] text-[var(--ink-soft)]">
                 Every stem is drawn in the browser · the link is the whole recipe
               </p>

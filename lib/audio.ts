@@ -19,6 +19,8 @@ export type AudioConfig = {
   density: number;
   bloom: number;
   arrangement: string;
+  /** which way the score is voiced; absent means the original glass register */
+  register?: string;
 };
 
 /** Pentatonic modes, in semitones — no interval here can sound wrong against another. */
@@ -30,6 +32,55 @@ const MODES: Record<string, number[]> = {
 };
 
 const MODE_NAMES = Object.keys(MODES);
+
+/**
+ * Registers.
+ *
+ * A register is not a track — it is a set of decisions about *how* the same bouquet is
+ * voiced: which modes are allowed, how far apart the notes fall, how long they ring, how
+ * many voices sound at once, and how much space sits around them. Because the seed still
+ * drives every choice underneath, two bouquets in the same register are as different as
+ * two bouquets in the same key.
+ *
+ * This is what a "music" option means on a site with no audio files in it.
+ */
+type Register = {
+  /** modes, by name, that this register draws from */
+  modes: string[];
+  /** multiplier on the root note, in semitones */
+  transpose: number;
+  /** how wide the melody wanders, in semitones */
+  range: number;
+  /**
+   * How often a note arrives as a chord rather than a single voice.
+   * 0 = strictly one note at a time; 1 = every note may carry a third above it.
+   */
+  polyphony: number;
+  /** how much silence between notes: 0 sparse → 1 busy */
+  density: number;
+  /** multiplier on every decay */
+  ring: number;
+  /** half-width of the stereo field, 0 = mono */
+  width: number;
+  /** low-pass multiplier: the "air" of the room */
+  air: number;
+};
+
+export const REGISTERS: Record<string, Register> = {
+  // the original voice: struck glass, wide intervals, long ringing
+  glass: { modes: ["hirajoshi", "kumoi", "yo"], transpose: 0, range: 12, polyphony: 0, density: 1, ring: 1.5, width: 0.6, air: 1 },
+  // bowed: narrower intervals, held notes, a warm low bed
+  strings: { modes: ["yo", "in"], transpose: -5, range: 8, polyphony: 0.75, density: 0.7, ring: 2.4, width: 0.85, air: 0.62 },
+  // low, sparse, widely spaced, most of it silence
+  nocturne: { modes: ["in", "hirajoshi"], transpose: -12, range: 10, polyphony: 0.2, density: 0.42, ring: 2.9, width: 0.4, air: 0.5 },
+  // two voices in counterpoint, closer together, more movement
+  chamber: { modes: ["kumoi", "yo", "in"], transpose: -2, range: 14, polyphony: 1, density: 1.55, ring: 1.1, width: 0.95, air: 1.25 },
+};
+
+export function getRegister(key: string | undefined | null): Register | null {
+  if (!key || key === "silence") return null;
+  return REGISTERS[key] ?? REGISTERS.glass;
+}
 
 const TIMBRE: Record<Finish, { partials: [number, number][]; decay: number; lowpass: number }> = {
   // struck glass: inharmonic, bright, long
@@ -130,10 +181,14 @@ export class FloraAudio {
     }, 1000);
   }
 
+  private get register(): Register {
+    return getRegister(this.config?.register) ?? REGISTERS.glass;
+  }
+
   private tempo() {
     const density = this.config?.density ?? 7;
     // 3 stems is slow and ceremonial, 11 is busy but never fast
-    return 30 + density * 2.6;
+    return (30 + density * 2.6) * this.register.density;
   }
 
   private schedule() {
@@ -143,15 +198,24 @@ export class FloraAudio {
 
     const horizon = ctx.currentTime + 0.4;
     while (this.nextNote < horizon) {
+      // A register with polyphony above zero sometimes answers its own note with a
+      // second voice a third or a fifth above — scheduled on the same beat, sharing the
+      // register's pan and ring. This is what makes "chamber" read as two instruments
+      // rather than one instrument that is louder.
       this.emit(this.nextNote);
+      const reg = this.register;
+      if (reg.polyphony > 0 && this.rand() < reg.polyphony * 0.55) {
+        this.emit(this.nextNote + 0.004, true);
+      }
       const beat = 60 / this.tempo();
       // a rest every so often: silence is what makes the notes read as music
-      const rest = this.rand() < 0.22 ? beat * (1 + Math.floor(this.rand() * 2)) : beat;
+      const restChance = 0.22 + (1 - this.register.density) * 0.25;
+      const rest = this.rand() < restChance ? beat * (1 + Math.floor(this.rand() * 2)) : beat;
       this.nextNote += rest;
     }
   }
 
-  private emit(at: number) {
+  private emit(at: number, harmony = false) {
     const ctx = this.ctx!;
     const cfg = this.config!;
     if (!cfg.species.length) return;
@@ -159,14 +223,22 @@ export class FloraAudio {
     const voice = cfg.species[Math.floor(this.rand() * cfg.species.length)];
     const timbre = TIMBRE[voice.finish] ?? TIMBRE.glass;
 
-    const mode = MODES[MODE_NAMES[Math.floor(this.rand() * MODE_NAMES.length)]] ?? MODES.yo;
-    const root = 45 + Math.floor((cfg.seed % 7) * 2); // A2..G3 territory
+    const reg = this.register;
+    const allowed = reg.modes.length ? reg.modes : MODE_NAMES;
+    const mode = MODES[allowed[Math.floor(this.rand() * allowed.length)]] ?? MODES.yo;
+    const root = 45 + Math.floor((cfg.seed % 7) * 2) + reg.transpose; // A2..G3 territory, transposed
     const step = mode[Math.floor(this.rand() * mode.length)];
-    const octave = this.rand() < 0.3 ? 12 : 0;
-    const freq = midi(root + step + octave + (voice.weight > 2 ? -12 : 0));
+    // the register decides how far a voice may climb from the root
+    const octave = this.rand() < 0.3 && reg.range > 10 ? 12 : 0;
+    // a harmony voice sits a third or a fifth above, inside the same mode
+    const harmonic = harmony ? (this.rand() < 0.5 ? 3 : 7) : 0;
+    const freq = midi(root + step + octave + harmonic + (voice.weight > 2 ? -12 : 0));
 
-    // stereo image follows where the stem sits in the arrangement
-    const spread = cfg.arrangement === "solitaire" ? 0 : cfg.arrangement === "arch" ? 0.85 : 0.6;
+    // a little detune, so "strings" reads as a section rather than one sine
+    const detune = reg === REGISTERS.strings ? 1 + (this.rand() - 0.5) * 0.004 : 1;
+
+    // stereo image follows where the stem sits in the arrangement, narrowed by register
+    const spread = (cfg.arrangement === "solitaire" ? 0 : cfg.arrangement === "arch" ? 0.85 : 0.6) * reg.width;
     const pan = (this.rand() * 2 - 1) * spread;
 
     const out = ctx.createStereoPanner();
@@ -174,15 +246,20 @@ export class FloraAudio {
 
     const filter = ctx.createBiquadFilter();
     filter.type = "lowpass";
-    // bloom literally opens the instrument up
-    filter.frequency.value = timbre.lowpass * (0.45 + cfg.bloom * 0.75);
+    // bloom literally opens the instrument up; the register sets the size of the room
+    filter.frequency.value = timbre.lowpass * (0.45 + cfg.bloom * 0.75) * reg.air;
     filter.Q.value = 0.6;
+
+    const decay = timbre.decay * reg.ring;
+    // bowed voices swell; struck voices snap. The attack is the clearest difference
+    // between a string and a bell, so it is the one the register is allowed to change.
+    const attack = reg === REGISTERS.strings ? 0.34 : reg === REGISTERS.nocturne ? 0.16 : 0.012;
 
     const env = ctx.createGain();
     env.gain.setValueAtTime(0.0001, at);
     const peak = 0.16 / Math.sqrt(Math.max(1, this.voices));
-    env.gain.exponentialRampToValueAtTime(peak, at + 0.012);
-    env.gain.exponentialRampToValueAtTime(0.0001, at + timbre.decay);
+    env.gain.exponentialRampToValueAtTime(peak, at + attack);
+    env.gain.exponentialRampToValueAtTime(0.0001, at + decay);
 
     filter.connect(env).connect(out).connect(this.master!);
 
@@ -192,12 +269,12 @@ export class FloraAudio {
     for (const [ratio, gain] of timbre.partials) {
       const osc = ctx.createOscillator();
       osc.type = "sine";
-      osc.frequency.value = freq * ratio;
+      osc.frequency.value = freq * ratio * detune;
       const g = ctx.createGain();
       g.gain.value = gain * 0.5;
       osc.connect(g).connect(filter);
       osc.start(at);
-      osc.stop(at + timbre.decay + 0.05);
+      osc.stop(at + decay + 0.05);
       osc.onended = () => {
         this.voices = Math.max(0, this.voices - 1);
         osc.disconnect();
@@ -211,7 +288,7 @@ export class FloraAudio {
         env.disconnect();
         out.disconnect();
       },
-      (timbre.decay + 0.2) * 1000
+      (decay + 0.2) * 1000
     );
   }
 }

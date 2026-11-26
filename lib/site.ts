@@ -42,6 +42,8 @@ export const synthSite = {
     { label: "Compose", href: "/compose" },
     { label: "The studio", href: "/studio" },
     { label: "The garden", href: "/collection" },
+    /* the gift flow is the front door for anyone who arrived to send something */
+    { label: "Send", href: "/send" },
   ],
   socials: [
     { label: "Instagram", href: "https://instagram.com" },
