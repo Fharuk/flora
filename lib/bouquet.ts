@@ -153,7 +153,15 @@ export function composeBouquet(config: BouquetConfig): Stem[] {
   }
 
   const GOLDEN = Math.PI * (3 - Math.sqrt(5));
-  const mouthY = 1.32;
+  /*
+   * Where the stems actually begin: just inside the mouth of *this* vessel, not a
+   * fixed height. It used to be hard-coded to the bulb's mouth (1.32), so a bunch
+   * in the short tide bowl started half a unit above the rim and its stems hung in
+   * the air with a gap under them. The profile already knew the number.
+   */
+  const vessel = vesselProfile[config.vessel];
+  const mouthY = vessel.height - 0.06;
+  const radialLimit = vessel.mouth * 0.62;
 
   for (let i = 0; i < count; i++) {
     const species = weighted[Math.floor(rand() * weighted.length)] ?? chosen[0];
@@ -195,7 +203,7 @@ export function composeBouquet(config: BouquetConfig): Stem[] {
     stems.push({
       id: i,
       species,
-      origin: [Math.cos(azimuth) * radial, mouthY, Math.sin(azimuth) * radial],
+      origin: [Math.cos(azimuth) * Math.min(radial, radialLimit), mouthY, Math.sin(azimuth) * Math.min(radial, radialLimit)],
       azimuth,
       lean: lean + Math.min(0.2, weightPenalty),
       length,
