@@ -1,7 +1,7 @@
 "use client";
 
-import { Canvas } from "@react-three/fiber";
-import { useEffect, useMemo, useRef } from "react";
+import { Canvas, useThree } from "@react-three/fiber";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 
 import { composeBouquet, type BouquetConfig } from "@/lib/bouquet";
@@ -55,10 +55,54 @@ export function BouquetThumb({
           <directionalLight position={[-3, 5, 4]} intensity={theme === "dark" ? 2.2 : 1.5} />
           <directionalLight position={[3, 1, -3]} intensity={0.7} color="#cfe6ff" />
           <ThumbScene config={config} theme={theme} />
+          <FrameBouquet watch={config} />
         </Canvas>
       ) : null}
     </div>
   );
+}
+
+/**
+ * Point the camera at the bouquet, whatever size it is.
+ *
+ * The card is 19rem square and holds a solitaire or thirty stems, so any fixed
+ * camera either clips a tall arrangement at the top or leaves a small one lost in
+ * the middle. This measures the assembled group's bounds once the geometry is in
+ * the scene and frames them, keeping a margin for the head's silhouette. It runs
+ * on layout, before the first frame, so the card never shows the wrong shot.
+ */
+function FrameBouquet({ watch }: { watch: BouquetConfig }) {
+  const { camera, scene } = useThree();
+  useLayoutEffect(() => {
+    const rig = scene.getObjectByName("thumb-rig");
+    if (!rig) return;
+    const box = new THREE.Box3().setFromObject(rig);
+    if (box.isEmpty()) return;
+    const size = box.getSize(new THREE.Vector3());
+    const centre = box.getCenter(new THREE.Vector3());
+
+    const persp = camera as THREE.PerspectiveCamera;
+    const vFov = (persp.fov * Math.PI) / 180;
+    const hFov = 2 * Math.atan(Math.tan(vFov / 2) * persp.aspect);
+    /* the tighter of the two axes decides the distance, plus a margin for the
+       widest head turning end-on at the sides */
+    const margin = 1.06;
+    const distV = size.y / 2 / Math.tan(vFov / 2);
+    const distH = size.x / 2 / Math.tan(hFov / 2);
+    /* the camera looks at the box's centre, so depth needs no extra term — only
+       the tighter axis and a small margin for the widest head turning end-on */
+    const distance = Math.max(distV, distH) * margin;
+
+    /* look at the middle of the bouquet from its own front-right, keeping the
+       elevation the fixed shot had so the vessel still reads */
+    const dir = new THREE.Vector3(0.19, 0.28, 1).normalize();
+    persp.position.copy(centre).addScaledVector(dir, distance);
+    persp.lookAt(centre);
+    persp.near = Math.max(0.1, distance / 100);
+    persp.far = distance * 10;
+    persp.updateProjectionMatrix();
+  }, [camera, scene, watch]);
+  return null;
 }
 
 function ThumbScene({ config, theme }: { config: BouquetConfig; theme: Theme }) {
@@ -120,7 +164,7 @@ function ThumbScene({ config, theme }: { config: BouquetConfig; theme: Theme }) 
   }, [materials]);
 
   return (
-    <group ref={rig} rotation={[0, reduced ? 0.35 : -0.42, 0]} position={[0, -1.1, 0]} scale={1.08}>
+    <group name="thumb-rig" ref={rig} rotation={[0, reduced ? 0.35 : -0.42, 0]} scale={1.08}>
       <Vessel vessel={config.vessel} palette={palette} theme={theme} />
       {parts.map((part) => {
         if (!part) return null;
