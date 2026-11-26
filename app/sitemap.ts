@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 
+import { specimens } from "@/lib/specimens";
 import { synthSite } from "@/lib/site";
 
 /**
@@ -15,5 +16,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${synthSite.url}/studio`, lastModified, changeFrequency: "monthly", priority: 0.7 },
     { url: `${synthSite.url}/collection`, lastModified, changeFrequency: "weekly", priority: 0.6 },
     { url: `${synthSite.url}/plot`, lastModified, changeFrequency: "yearly", priority: 0.5 },
+    /* one page per specimen: eleven entry points into the collection, not one */
+    ...specimens.map((s) => ({
+      url: `${synthSite.url}/specimen/${s.slug}`,
+      lastModified,
+      changeFrequency: "yearly" as const,
+      priority: 0.6,
+    })),
   ];
 }

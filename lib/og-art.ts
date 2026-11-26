@@ -307,6 +307,102 @@ function bloomSvg(config: BouquetConfig) {
 }
 
 /**
+ * One specimen, alone on the card's panel.
+ *
+ * The bouquet card is a cluster of three heads because a bouquet is what it is
+ * describing. A specimen page describes a single plant, and cropping a cluster
+ * to find one would be a lie about what the page shows. So this draws the same
+ * specimen the page's vitrine draws — the collection's own species, at the
+ * collection's own scale — rather than a new arrangement of it.
+ *
+ * `form` decides the head's radius and placement: a spray or a spike is tall and
+ * wants to sit back in the frame, where a cup or a fan is round and wants to
+ * fill it. The four cases below come from the same three values the bloom
+ * function takes.
+ */
+export function specimenSheet(slug: string, seed: number): string {
+  const spec = getSpecimen(slug) ?? getSpecimen("peony")!;
+  const palette = palettes.frost;
+  const wash = mix(spec.colours.petal[1], "#9e2b3e", 0.5);
+  const tall = spec.form === "spray" || spec.form === "spike";
+  const wide = spec.form === "fan" || spec.form === "spathe";
+
+  /*
+   * A spray or a spike is several small heads on one stem, not one big one: the
+   * ghost orchid drawn as a single six-petal disc read as a flat grey star. The
+   * forms that are genuinely one head — cup, fan, spathe — stay one head.
+   */
+  const cx = ART_W * 0.5;
+  const heads = tall
+    ? [
+        { x: cx, y: ART_H * 0.34, r: 104, k: 0 },
+        { x: cx - ART_W * 0.155, y: ART_H * 0.47, r: 78, k: 1 },
+        { x: cx + ART_W * 0.16, y: ART_H * 0.5, r: 70, k: 2 },
+      ]
+    : [{ x: cx, y: ART_H * 0.45, r: wide ? 196 : 188, k: seed % 3 }];
+
+  const cy = heads[0].y;
+  const drawn = heads.map((h) => bloom(spec, h.x, h.y, h.r, h.k));
+  const head = { defs: drawn.map((d) => d.defs).join(""), body: drawn.map((d) => d.body).join("") };
+
+  /* a stem to every head, all leaving the same point below the frame */
+  const mouth = ART_H * 1.04;
+  const stem = heads
+    .map(
+      (h) =>
+        `<path d="M${r2(cx)} ${r2(mouth)} Q${r2((cx + h.x) / 2 - 8)} ${r2((mouth + h.y) / 2)} ${r2(h.x)} ${r2(h.y + h.r * 0.5)}" fill="none" stroke="${spec.colours.stem}" stroke-opacity="0.55" stroke-width="3.4" stroke-linecap="round"/>`
+    )
+    .join("");
+
+  const defs =
+    `<radialGradient id="sheetGround" cx="0.5" cy="0.42" r="0.86">` +
+    `<stop offset="0" stop-color="${mix(wash, "#3c1a20", 0.5)}"/>` +
+    `<stop offset="0.5" stop-color="#2a1218"/>` +
+    `<stop offset="1" stop-color="#160a0d"/>` +
+    `</radialGradient>` +
+    `<radialGradient id="sheetKey" cx="0.5" cy="0.1" r="0.8">` +
+    `<stop offset="0" stop-color="#ffe7c6" stop-opacity="0.3"/>` +
+    `<stop offset="1" stop-color="#ffe7c6" stop-opacity="0"/>` +
+    `</radialGradient>` +
+    `<radialGradient id="sheetHalo" cx="0.5" cy="0.5" r="0.5">` +
+    `<stop offset="0" stop-color="${mix(spec.colours.petal[1], "#ffe7c6", 0.3)}" stop-opacity="0.2"/>` +
+    `<stop offset="0.62" stop-color="${mix(spec.colours.petal[1], "#ffe7c6", 0.3)}" stop-opacity="0.07"/>` +
+    `<stop offset="1" stop-color="${mix(spec.colours.petal[1], "#ffe7c6", 0.3)}" stop-opacity="0"/>` +
+    `</radialGradient>` +
+    `<radialGradient id="sheetPool" cx="0.5" cy="0.5" r="0.5">` +
+    `<stop offset="0" stop-color="#0a0205" stop-opacity="0.8"/>` +
+    `<stop offset="1" stop-color="#0a0205" stop-opacity="0"/>` +
+    `</radialGradient>` +
+    /* the same left-edge dissolve as the bouquet card, so the halves read as one picture */
+    `<radialGradient id="sheetLeft" cx="0.5" cy="0.5" r="0.5">` +
+    `<stop offset="0" stop-color="#1a0a0f" stop-opacity="0.96"/>` +
+    `<stop offset="0.52" stop-color="#1a0a0f" stop-opacity="0.6"/>` +
+    `<stop offset="1" stop-color="#1a0a0f" stop-opacity="0"/>` +
+    `</radialGradient>` +
+    head.defs;
+
+  return (
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${ART_W} ${ART_H}" width="${ART_W}" height="${ART_H}">` +
+    `<defs>${defs}</defs>` +
+    `<rect width="${ART_W}" height="${ART_H}" fill="url(#sheetGround)"/>` +
+    `<ellipse cx="${r2(cx)}" cy="${r2(ART_H * 1.0)}" rx="${ART_W * 0.3}" ry="52" fill="url(#sheetPool)"/>` +
+    `<ellipse cx="${r2(cx)}" cy="${r2(cy)}" rx="${r2(wide ? 260 : 240)}" ry="${r2(tall ? 200 : 210)}" fill="url(#sheetHalo)"/>` +
+    stem +
+    head.body +
+    `<rect width="${ART_W}" height="${ART_H}" fill="url(#sheetKey)"/>` +
+    `<rect width="${ART_W}" height="${ART_H}" fill="url(#sheetLeft)"/>` +
+    `</svg>`
+  );
+}
+
+/** Rasterises a specimen sheet to PNG bytes, at the same 1x the panel draws. */
+export async function specimenSheetPng(slug: string, seed: number): Promise<Buffer> {
+  return sharp(Buffer.from(specimenSheet(slug, seed)), { density: 96 })
+    .png({ compressionLevel: 9, effort: 6 })
+    .toBuffer();
+}
+
+/**
  * Rasterises the card's specimen to PNG bytes.
  *
  * Rendered at 1x, which is all the panel needs: satori embeds this as a base64
