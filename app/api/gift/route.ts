@@ -35,6 +35,7 @@ type CreateBody = {
   video?: unknown;
   photos?: unknown;
   voice?: unknown;
+  envelope?: unknown;
 };
 
 /** Media items are validated as *references*, never as data: the bytes go to storage. */
@@ -105,6 +106,9 @@ export async function POST(request: Request) {
   const voice = parseVoice(body.voice);
   const video = parseVideo(body.video);
   const register = typeof body.register === "string" ? cleanText(body.register, 24) : "glass";
+  // the envelope the sender chose in the card step; the recipient sees the same paper
+  const envelopeRaw = typeof body.envelope === "string" ? cleanText(body.envelope, 16) : "classic";
+  const envelope = ["classic", "glass", "noir"].includes(envelopeRaw) ? envelopeRaw : "classic";
 
   const row = {
     code,
@@ -121,6 +125,7 @@ export async function POST(request: Request) {
     message: submission.message,
     guest: null,
     recipient: cleanText(body.recipient, 48) || null,
+    envelope,
     register: ["glass", "strings", "nocturne", "chamber", "silence"].includes(register) ? register : "glass",
     pin_hash: pinHash,
     owner_hash: hashOwnerKey(ownerKey),
@@ -172,7 +177,7 @@ export async function GET(request: Request) {
 
   const { data, error } = await client
     .from(TABLES.bouquets)
-    .select(`${GARDEN_COLUMNS},owner_hash,recipient,register,photos,voice,video,pin_hash,status`)
+    .select(`${GARDEN_COLUMNS},owner_hash,recipient,register,envelope,photos,voice,video,pin_hash,status`)
     .eq("code", code)
     .maybeSingle();
 
@@ -188,6 +193,7 @@ export async function GET(request: Request) {
     entry: toEntry(row),
     recipient: row.recipient ?? null,
     register: row.register ?? "glass",
+    envelope: row.envelope ?? "classic",
     locked: Boolean(row.pin_hash),
     photos: row.photos ?? [],
     voice: row.voice ?? null,

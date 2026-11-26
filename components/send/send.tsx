@@ -127,6 +127,7 @@ export function SendStep({ onBack }: { onBack: () => void }) {
           register: draft.register,
           pin: draft.pin,
           video: draft.videoUrl ? parseVideo({ url: draft.videoUrl }) : null,
+          envelope: draft.envelope,
         }),
       });
 

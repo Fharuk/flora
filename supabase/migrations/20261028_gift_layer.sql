@@ -23,6 +23,8 @@ alter table public.flora_bouquets
   add column if not exists video jsonb,
   -- a greeting shown above the letter, on the envelope card
   add column if not exists recipient text,
+  -- which paper the sender chose; the recipient opens the same envelope
+  add column if not exists envelope text not null default 'classic',
   -- 'draft' until the sender creates the link; a draft is never listed in the garden
   add column if not exists status text not null default 'sealed',
   -- how many times the PIN has been refused, so a four-digit code is not free to guess

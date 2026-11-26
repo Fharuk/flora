@@ -6,6 +6,7 @@ import { Header } from "@/components/synth/header";
 import { SynthFooter } from "@/components/synth/notes";
 import { db, TABLES } from "@/lib/db";
 import { GARDEN_COLUMNS, isCode, toEntry, type GardenEntry } from "@/lib/garden";
+import type { EnvelopeStyle } from "@/components/synth/envelope";
 import type { GiftVideo } from "@/lib/gift";
 import { synthSite } from "@/lib/site";
 
@@ -16,9 +17,10 @@ type GiftRow = GardenEntry & {
   register: string;
   pin_hash: string | null;
   video: GiftVideo | null;
+  envelope: EnvelopeStyle;
 };
 
-const GIFT_COLUMNS = `${GARDEN_COLUMNS},recipient,register,pin_hash,video`;
+const GIFT_COLUMNS = `${GARDEN_COLUMNS},recipient,register,envelope,pin_hash,video`;
 
 async function loadEntry(code: string): Promise<GiftRow | null> {
   if (!isCode(code)) return null;
@@ -37,6 +39,9 @@ async function loadEntry(code: string): Promise<GiftRow | null> {
     register: typeof row.register === "string" ? row.register : "glass",
     pin_hash: typeof row.pin_hash === "string" ? row.pin_hash : null,
     video: (row.video as GiftVideo | null) ?? null,
+    envelope: (["classic", "glass", "noir"] as const).includes(row.envelope as EnvelopeStyle)
+      ? (row.envelope as EnvelopeStyle)
+      : "classic",
   };
 }
 
@@ -94,6 +99,7 @@ export default async function GiftPage({ params }: { params: Promise<{ code: str
           // a PIN on the row is the only thing that makes the envelope lock
           locked={Boolean(entry.pin_hash)}
           video={entry.video}
+          envelope={entry.envelope}
         />
         <SynthFooter />
       </main>
