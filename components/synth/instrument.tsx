@@ -16,6 +16,7 @@ import {
   specimens,
   vessels,
 } from "@/lib/specimens";
+import { ShelfButton } from "@/components/synth/shelf";
 import { cn } from "@/lib/utils";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
@@ -143,6 +144,7 @@ export function Instrument({ children }: { children?: React.ReactNode }) {
                   Compose
                   <ArrowDown className="h-3 w-3" />
                 </a>
+                <ShelfButton />
                 {/* a still and a share, icon-only, so four actions stay on one line at every width */}
                 <button
                   type="button"

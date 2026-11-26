@@ -3,6 +3,8 @@
 import { motion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { BouquetThumb } from "@/components/three/bouquet-thumb";
+import { KeepButton } from "@/components/synth/shelf";
 import { decodeBouquet, encodeBouquet } from "@/lib/bouquet";
 import type { GardenEntry } from "@/lib/garden";
 import { getSpecimen } from "@/lib/hybrids";
@@ -74,49 +76,69 @@ function EntryCard({ entry, onOpen }: { entry: GardenEntry; onOpen: () => void }
     [entry.species]
   );
 
+  const theme = useSynth((s) => s.theme);
+  const config = useMemo(() => decodeBouquet(entry.config), [entry.config]);
+
   return (
     <button
       type="button"
       onClick={onOpen}
-      className="card-love group relative w-[19rem] shrink-0 overflow-hidden rounded-2xl p-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]"
+      className="card-love group relative h-[19rem] w-[19rem] shrink-0 overflow-hidden rounded-2xl p-5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--gold)]"
     >
-      <div className="flex items-start justify-between gap-3">
-        <span className="font-mono text-[0.55rem] uppercase tracking-[0.26em] text-[var(--gold-ink)]">
-          {entry.code}
-        </span>
-        <span className="font-sans text-[0.5rem] uppercase tracking-[0.22em] text-ink-soft">
-          {relative(entry.created_at)}
-        </span>
-      </div>
+      {/*
+        * The composition itself, not a swatch of its colours. This is the whole
+        * claim of the project made visible: the card is drawn from the same eight
+        * numbers in the URL as the instrument.
+        */}
+      <BouquetThumb
+        config={config}
+        theme={theme}
+        className="pointer-events-none absolute inset-0 h-full w-full opacity-40 transition-opacity duration-700 group-hover:opacity-60"
+      />
+      {/* the card's own ground sits over the render, so the type stays readable */}
+      <span
+        aria-hidden
+        className="absolute inset-x-0 bottom-0 top-1/3 bg-gradient-to-t from-[var(--paper)] via-[color-mix(in_oklab,var(--paper)_86%,transparent)] to-transparent"
+      />
+      <div className="relative flex h-full flex-col">
+        <div className="flex items-start justify-between gap-3">
+          <span className="font-mono text-[0.55rem] uppercase tracking-[0.26em] text-[var(--gold-ink)]">
+            {entry.code}
+          </span>
+          <span className="font-sans text-[0.5rem] uppercase tracking-[0.22em] text-ink-soft">
+            {relative(entry.created_at)}
+          </span>
+        </div>
 
-      <p className="mt-3 font-display text-[1.35rem] leading-tight tracking-[-0.01em] text-ink">
-        {entry.title}
-      </p>
-
-      <div className="mt-3 flex items-center gap-1.5" aria-hidden>
-        {species.map((spec, i) => (
-          <span
-            key={`${spec!.slug}-${i}`}
-            className="h-2.5 w-2.5 rounded-full ring-1 ring-[color-mix(in_oklab,var(--gold)_50%,transparent)]"
-            style={{
-              background: `linear-gradient(140deg, ${spec!.colours.petal[0]}, ${spec!.colours.petal[1]})`,
-            }}
-          />
-        ))}
-        <span className="ml-1 font-sans text-[0.5rem] uppercase tracking-[0.2em] text-ink-soft">
-          {entry.density} stems
-        </span>
-      </div>
-
-      {entry.message ? (
-        <p className="mt-3 line-clamp-2 font-display text-[0.95rem] italic leading-snug text-ink-soft">
-          “{entry.message}”
+        <p className="mt-3 font-display text-[1.35rem] leading-tight tracking-[-0.01em] text-ink">
+          {entry.title}
         </p>
-      ) : (
-        <p className="mt-3 font-sans text-[0.5rem] uppercase tracking-[0.2em] text-ink-soft">
-          {entry.creator ? `signed ${entry.creator}` : `seed ${entry.seed.toString(36).toUpperCase()}`}
-        </p>
-      )}
+
+        <div className="mt-3 flex items-center gap-1.5" aria-hidden>
+          {species.map((spec, i) => (
+            <span
+              key={`${spec!.slug}-${i}`}
+              className="h-2.5 w-2.5 rounded-full ring-1 ring-[color-mix(in_oklab,var(--gold)_50%,transparent)]"
+              style={{
+                background: `linear-gradient(140deg, ${spec!.colours.petal[0]}, ${spec!.colours.petal[1]})`,
+              }}
+            />
+          ))}
+          <span className="ml-1 font-sans text-[0.5rem] uppercase tracking-[0.2em] text-ink-soft">
+            {entry.density} stems
+          </span>
+        </div>
+
+        {entry.message ? (
+          <p className="mt-3 line-clamp-2 font-display text-[0.95rem] italic leading-snug text-ink-soft">
+            “{entry.message}”
+          </p>
+        ) : (
+          <p className="mt-3 font-sans text-[0.5rem] uppercase tracking-[0.2em] text-ink-soft">
+            {entry.creator ? `signed ${entry.creator}` : `seed ${entry.seed.toString(36).toUpperCase()}`}
+          </p>
+        )}
+      </div>
     </button>
   );
 }
@@ -276,6 +298,17 @@ export function SavePanel() {
       ) : (
         <div className="space-y-3">
           <p className="label text-[var(--gold-ink)]">Save &amp; seal</p>
+          {/*
+            * Two ways to keep it, in the order they cost. The shelf is private,
+            * instant and free; the garden is public and permanent. Offering only
+            * the second asked people to publish before they could simply return.
+            */}
+          <div className="flex flex-wrap items-center gap-2">
+            <KeepButton />
+            <span className="font-sans text-[0.5rem] uppercase tracking-[0.2em] text-ink-soft">
+              private · on this device
+            </span>
+          </div>
           <div className="grid gap-2 sm:grid-cols-2">
             <input
               value={creator}
