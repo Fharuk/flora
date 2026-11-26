@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 
+import { ChapterAnnouncer, ChapterRail, FilmEssay } from "@/components/stamen/A11y";
 import Stage from "@/components/stamen/Stage";
 import FilmLink from "@/components/stamen/FilmLink";
 import Loader from "@/components/stamen/Loader";
@@ -55,7 +56,10 @@ export default function HomePage() {
       <Loader />
       <Nav />
       <Hud />
-      <main id="main" className="relative z-10">
+      <ChapterAnnouncer />
+      <ChapterRail />
+      <FilmEssay />
+      <main id="main" className="stamen-chapters relative z-10">
         <Bloom />
         <Scatter />
         <Closer />

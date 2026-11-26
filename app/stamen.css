@@ -106,6 +106,21 @@ html[data-stamen-tone="field"] .stamen {
   background: rgba(255, 246, 244, 0.96);
 }
 
+/*
+ * Reduced motion: the film's chapters step aside for the essay.
+ *
+ * The chapters are scroll-pinned stages several viewport-heights tall; leaving
+ * them in place under a static reading gives a reader the same text twice and
+ * eight thousand pixels of nothing. The essay is the film, told plainly.
+ */
+html[data-stamen-essay] .stamen-chapters {
+  display: none;
+}
+html[data-stamen-essay] .stamen-chrome {
+  position: static;
+  opacity: 1 !important;
+}
+
 /* the display face: Fraunces, soft and a little wonky */
 .stamen-serif {
   font-family: "Fraunces", "Times New Roman", serif;
