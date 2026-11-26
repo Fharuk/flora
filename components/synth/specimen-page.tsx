@@ -62,7 +62,7 @@ export function SpecimenStand({ specimen }: { specimen: Specimen }) {
 }
 
 /** the form is a code in the record — "spray", "cup", "spathe" — so it gets a label */
-const FORM_LABEL: Record<string, string> = {
+export const FORM_LABEL: Record<string, string> = {
   spiral: "Spiral",
   cup: "Cup",
   spray: "Spray",
